@@ -1,0 +1,30 @@
+from fastapi import FastAPI, status
+from fastapi.responses import JSONResponse
+from src.auth.routers import router
+from database import Base, engine
+from fastapi.exceptions import RequestValidationError
+from utils import format_validation_errors
+from fastapi.testclient import TestClient
+
+
+
+def create_app():
+
+    app = FastAPI()
+
+    app.include_router(router)
+    Base.metadata.create_all(bind=engine)
+    @app.get("/")
+    async def root():
+        return {"message": "Hello World"} 
+
+    @app.exception_handler(RequestValidationError)
+    async def validation_exception_handler(request, exc):
+        return JSONResponse(format_validation_errors(exc), status.HTTP_422_UNPROCESSABLE_ENTITY)
+    
+    return app
+
+   
+
+app = create_app()
+client = TestClient(app)

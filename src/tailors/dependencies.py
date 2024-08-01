@@ -1,0 +1,15 @@
+from sqlalchemy.orm import Session
+from fastapi import Depends, Body
+from dependencies import get_db
+from src.tailors.models import Tailor
+from src.auth.schemas import TailorRegIn
+
+
+def get_tailor_by_id(id: str, db: Session = Depends(get_db)) -> Tailor:
+    tailor = db.query(Tailor).filter(id==Tailor.id).one_or_none()
+    return tailor
+
+
+def get_tailor_by_email(req_body : TailorRegIn = Body(...), db: Session = Depends(get_db)) -> Tailor:
+    tailor = db.query(Tailor).filter(req_body.email==Tailor.email).one_or_none()
+    return tailor
