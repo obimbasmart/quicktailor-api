@@ -17,3 +17,7 @@ def create_tailor(tailor: TailorRegIn, db: Session):
     db.commit()
     db.refresh(new_tailor)
     return new_tailor
+
+def get_tailors(db: Session, filters: dict = None):
+    return db.query(Tailor).all()
+

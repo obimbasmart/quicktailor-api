@@ -8,7 +8,6 @@ from src.tailors.dependencies import  get_tailor_by_email
 from src.auth.dependencies import get_db
 from src.tailors.CRUD import create_tailor
 from src.users.CRUD import create_user
-from typing import Annotated
 from .utils import create_access_token
 from .config import settings as auth_settings
 from src.auth.dependencies import get_current_user, get_by_email
@@ -53,8 +52,3 @@ def login(req_body: Login, user = Depends(get_by_email)):
     
     access_token = create_access_token({"email" : user.email}, auth_settings.ACCESS_TOKEN_EXPIRE_MINUTES)
     return {"access_token" : access_token, "data" : {"id" : user.id}}
-
-
-@router.get("/me")
-def get_siter_benard(current_user =  Depends(get_current_user)):
-    return {"msg" : "Correct man"}

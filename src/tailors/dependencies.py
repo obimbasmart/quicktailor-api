@@ -5,8 +5,8 @@ from src.tailors.models import Tailor
 from src.auth.schemas import TailorRegIn
 
 
-def get_tailor_by_id(id: str, db: Session = Depends(get_db)) -> Tailor:
-    tailor = db.query(Tailor).filter(id==Tailor.id).one_or_none()
+def get_tailor_by_id(tailor_id: str, db: Session = Depends(get_db)) -> Tailor:
+    tailor = db.query(Tailor).filter(tailor_id==Tailor.id).one_or_none()
     return tailor
 
 
