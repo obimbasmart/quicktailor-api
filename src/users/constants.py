@@ -31,3 +31,5 @@ FAVORITES = {
     "tailors": [],
     "products": []
 }
+
+SUCCESSFUL_UPDATE = {"message": "Successfully updated"}

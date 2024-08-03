@@ -3,14 +3,13 @@ from fastapi import Depends, Body
 from dependencies import get_db
 from src.users.models import User
 from src.auth.schemas import UserRegIn
-from src.products.schemas import CreateCustomCode
 
-def get_user_by_email(req_body : UserRegIn  = Body(...), db: Session = Depends(get_db)) -> User:
+def get_user_by_email(req_body : UserRegIn = Body(...), db: Session = Depends(get_db)) -> User:
     user = db.query(User).filter(req_body.email==User.email).one_or_none()
+    print(req_body)
     return user
 
-def get_user_by_id(id: str, db: Session = Depends(get_db)) -> User:
-    user = db.query(User).filter(id==User.id).one_or_none()
+def get_user_by_id(user_id: str, db: Session = Depends(get_db)) -> User:
+    user = db.query(User).filter(user_id==User.id).one_or_none()
     return user
-
 
