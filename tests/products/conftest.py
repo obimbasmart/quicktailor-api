@@ -13,8 +13,8 @@ def product_data():
 
 
 @pytest.fixture
-def db_product_id(access_token_tailor_header, product_data) -> str:
+def db_product_id(access_token_tailor, product_data) -> str:
     res = client.post('/products', json=product_data.model_dump(),
-                      headers=access_token_tailor_header)
+                      headers=access_token_tailor['header'])
     assert res.status_code == 201
     return res.json()['id']

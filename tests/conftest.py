@@ -34,19 +34,23 @@ def create_new_user(user_info: TailorRegIn | UserRegIn, user_type: str = 'user')
     assert res_r.status_code == 201
     res_l = client.post(
         "/auth/login", json=user_info.model_dump(include=["email", "password"]))
-    return {"Authorization": f'Bearer {res_l.json()["access_token"]}'}
+    return \
+        {
+            'id': res_l.json()['data']['id'],
+            'header': {"Authorization": f'Bearer {res_l.json()["access_token"]}'}
+        }
 
 
 @pytest.fixture
-def access_token_tailor_header(reset_db):
+def access_token_tailor(reset_db):
     return create_new_user(tailor_reg_info, user_type='tailor')
 
 
 @pytest.fixture
-def access_token_tailor_header_02():
+def access_token_tailor_02():
     return create_new_user(tailor_reg_info_02, user_type='tailor')
 
 
 @pytest.fixture
-def access_token_user_header(reset_db) -> str:
+def access_token_user(reset_db) -> str:
     return create_new_user(user_reg_info)
