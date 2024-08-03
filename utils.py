@@ -1,7 +1,6 @@
 import bcrypt
 from uuid import uuid4
 from pydantic import ValidationError
-from pprint import pprint as pp
 from fastapi import Depends
 from dependencies import get_db
 

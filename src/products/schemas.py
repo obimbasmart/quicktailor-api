@@ -34,8 +34,8 @@ class ProductListItem(BaseModel):
     id: UUID4
     name: str
     price: float
-    images: List = Field(exclude=True)
-    image_cover_index: int = Field(exclude=True)
+    images: List = Field(exclude=True, default=[])
+    image_cover_index: int = Field(exclude=True, default=0)
     tailor: TailorListInfo | None
 
 
@@ -91,7 +91,7 @@ class ProductTailorItem(TailorListInfo):
     def avg_review(self) -> float:
         # return  self.tailor.reviews.rating .....
         return 0.0
-    
+
 class CreateCustomCode(BaseModel):
     deal: str
     unit: str

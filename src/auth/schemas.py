@@ -9,6 +9,9 @@ class BaseUser(BaseModel):
   password: str = Field(..., pattarn=r'^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)(?=.*[@$!%*?&])[A-Za-z\d@$!%*?&]{8,}$')
   password_2: str
 
+  class Config:
+    extra='forbid'
+
 class UserRegIn(BaseUser):
   username: str = Field(..., pattern=r'^[A-Za-z][A-Za-z0-9_]{3,20}$')
 

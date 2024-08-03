@@ -35,14 +35,14 @@ def _get_product(id: str, db: Session):
 
 
 def _delete_product(id: str, tailor: Tailor, db: Session):
-    print(tailor.first_name)
     product = db.query(Product).filter(id == Product.id).one_or_none()
     if not product:
         raise HTTPException(status_code=404, detail="Product Not found")
 
+
     if product.id not in [product.id for product in tailor.products]:
         raise HTTPException(status_code=403, detail="Access denied")
-
+    
     db.delete(product)
     db.commit()
     return True
@@ -55,7 +55,7 @@ def _create_custom_code(product_id: str, tailor_id: str, req_body: CreateCustomC
 
     product = _get_product(product_id, db)
     customCode = CustomizationCode(
-        **req_body.model_dump(), tailor_id=tailor_id, product_id=product.id, user_id=user.id)
+        **req_body.model_dump(exclude=['customer_email']), tailor_id=tailor_id, product_id=product.id, user_id=user.id)
     db.add(customCode)
     db.commit()
     return customCode.id[-8:]

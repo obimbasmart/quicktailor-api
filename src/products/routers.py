@@ -5,8 +5,8 @@ from src.products.schemas import ProductUpload, ProductListItem, ProductItem, Pr
 from src.auth.schemas import BaseResponse
 from src.products.CRUD import _get_products, _create_product, _get_product, _delete_product, _create_custom_code
 from dependencies import get_db
-from src.users.dependencies import get_user_by_email
 from typing import List
+from fastapi.responses import JSONResponse
 
 
 router = APIRouter(
@@ -15,12 +15,12 @@ router = APIRouter(
 )
 
 
-@router.post('', response_model=None)
+@router.post('', response_model=BaseResponse)
 def create_product(req_body: ProductUpload,
                    tailor=Depends(get_current_tailor),
                    db=Depends(get_db)):
     new_product = _create_product(req_body, tailor.id, db)
-    return {'success': "yes"}
+    return JSONResponse(status_code=201, content = {'message' : 'success', "id" : new_product.id})
 
 
 @router.get('', response_model=List[ProductListItem])
