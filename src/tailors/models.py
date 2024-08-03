@@ -1,6 +1,7 @@
 from sqlalchemy import Boolean, Column, String, DATETIME, TEXT
 from sqlalchemy_json import NestedMutableJson
 from models import BaseUser
+from sqlalchemy.orm import relationship
 
 class Tailor(BaseUser):
     __tablename__ = "tailors"
@@ -21,3 +22,5 @@ class Tailor(BaseUser):
     nin_is_verified = Column(Boolean, default=False)
     last_active = Column(DATETIME, nullable=True)
     language = Column(NestedMutableJson, nullable=True)
+
+    products = relationship('Product', back_populates="tailor")
