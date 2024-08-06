@@ -1,28 +1,28 @@
 from src.auth.schemas import UserRegIn, Login
+from src.users.schemas import UpdateFields, MeasurementUpdate
 import pytest
 
 
-_user_id = {"id": "506a89b7-03d8-4ae7-8487-3c70e5ffb656"}
+_info_update_fields = {"email": "memmalino@gmail.com", "password": "Imaewwr22@", "phone": "08123456789"}
+_info_update_fields_02 = {"email": "test_user_02@gmail.com", "password": "Imaewwr22@", "phone": "08123456789"}
+_measurement_update_fields = {"measurement_type": "male", "neck":3.4, "waist": 1.5, "chest_burst": 3.9}
 
 
-_user_data_register = {
-                        "email" : "test@gmail.com", "username" : "test",
-                        "phone" : "09023473648", "password": "test_pwd",
-                        "password_2" : "test_pwd"
-                      }
-
-_login_data = {"email" : "test@gmail.com", "password": "test_pwd"}
-
-@pytest.fixture
-def user_id():
-    return _user_id
+_failure_data = {"name": "my_name", "is_online":True}
 
 
 @pytest.fixture
-def user_data_register():
-    return UserRegIn(**_user_data_register)
-
+def failure_data():
+    return _failure_data
 
 @pytest.fixture
-def login_data():
-    return _login_data
+def info_update_fields():
+    return UpdateFields(**_info_update_fields)
+
+@pytest.fixture
+def measurement_update_fields():
+    return MeasurementUpdate(**_measurement_update_fields)
+
+@pytest.fixture
+def info_update_fields_02():
+    return UpdateFields(**_info_update_fields_02)

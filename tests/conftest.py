@@ -20,6 +20,8 @@ tailor_reg_info_02 = TailorRegIn(**tailor_info, email=tailor_email_02)
 
 user_reg_info = UserRegIn(username='test', email='test_user@gmail.com', phone='09034568373',
                           password='test@pwd1', password_2='test@pwd1')
+user_reg_info_02 = UserRegIn(username='test_02', email='test_user_02@gmail.com', phone='09034560373',
+                          password='test@pwd1', password_2='test@pwd1')
 
 
 @pytest.fixture
@@ -54,3 +56,8 @@ def access_token_tailor_02():
 @pytest.fixture
 def access_token_user(reset_db) -> str:
     return create_new_user(user_reg_info)
+
+@pytest.fixture
+def access_token_user_02(reset_db) -> str:
+    return create_new_user(user_reg_info_02)
+
