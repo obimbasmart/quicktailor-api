@@ -23,6 +23,14 @@ user_reg_info = UserRegIn(username='test', email='test_user@gmail.com', phone='0
 user_reg_info_02 = UserRegIn(username='test_02', email='test_user_02@gmail.com', phone='09034560373',
                           password='test@pwd1', password_2='test@pwd1')
 
+import os
+import pytest
+
+def pytest_configure(config):
+    env = os.getenv('ENVIRONMENT', 'production')
+    if env.lower() != 'testing':
+        pytest.exit("Tests can only be run in the testing environment. "
+                    "Please set ENVIRONMENT=testing before running tests.")
 
 @pytest.fixture
 def reset_db():

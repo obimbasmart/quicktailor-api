@@ -8,7 +8,7 @@ from src.users.constants import SUCCESSFUL_UPDATE
 
 
 def create_user(user: UserRegIn, db: Session):
-    new_user = User(**user.model_dump(exclude="password"))
+    new_user = User(**user.model_dump(exclude=["password", 'password_2']))
 
     new_user.set_password(user.password)
     new_user.message_key = generate_uuid()

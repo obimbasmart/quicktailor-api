@@ -29,6 +29,7 @@ def register_user(req_body: UserRegIn,
     # TODO: sync user to message app service - Background task
 
     user = create_user(req_body, db)
+    print(user.is_admin)
     return JSONResponse(status_code=201, content = {"message": "Registeration successfull!"})
 
 
@@ -51,4 +52,5 @@ def login(req_body: Login, user = Depends(get_by_email)):
         raise HTTPException(status_code=status.HTTP_401_UNAUTHORIZED, detail="Invalid email or password")
     
     access_token = create_access_token({"email" : user.email}, auth_settings.ACCESS_TOKEN_EXPIRE_MINUTES)
+    print(user.is_admin)
     return {"access_token" : access_token, "data" : {"id" : user.id}}

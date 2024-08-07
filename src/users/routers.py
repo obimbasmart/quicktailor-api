@@ -3,7 +3,7 @@ from fastapi.responses import JSONResponse
 from src.auth.dependencies import get_current_user
 from src.users.CRUD import get_users, update_user, update_measurement
 from src.users.dependencies import get_user_by_id
-from src.users.schemas import UserInfo, UpdateFields, SuccessMsg, FemaleMeasurementInfo,  MaleMeasurementInfo, MeasurementUpdate, KidMeasurementInfo
+from src.users.schemas import UserInfo, UpdateFields, SuccessMsg, FemaleMeasurementInfo,  MaleMeasurementInfo, MeasurementUpdate
 from dependencies import get_db
 from typing import List, Union
 from pydantic import UUID4, ValidationError
@@ -43,7 +43,7 @@ def update_user_route(req_body: UpdateFields,  user_id: str, current_user=Depend
     update = update_user(user_id, req_body, db)
     return update
 
-@router.get('/measurement/{user_id}', response_model=List[Union[MaleMeasurementInfo, FemaleMeasurementInfo, KidMeasurementInfo]])
+@router.get('/measurement/{user_id}', response_model=List[Union[MaleMeasurementInfo, FemaleMeasurementInfo]])
 def get_user_measurement(user_id: UUID4, current_user=Depends(get_current_user),
                       db=Depends(get_db), user=Depends(get_user_by_id)):
     if not user:
@@ -54,28 +54,24 @@ def get_user_measurement(user_id: UUID4, current_user=Depends(get_current_user),
             formatted_measurements.append(MaleMeasurementInfo(**measurement))
         if "measurement_type" in measurement and measurement['measurement_type'] == "female":
             formatted_measurements.append(FemaleMeasurementInfo(**measurement))
-        if "measurement_type" in measurement and measurement['measurement_type'] == "kids":
-            formatted_measurements.append(KidMeasurementInfo(**measurement))
 
     return formatted_measurements
 
-@router.put('/measurement/{user_id}', response_model=Union[MaleMeasurementInfo, FemaleMeasurementInfo, KidMeasurementInfo])
-def update_user_measurement(req_body: MeasurementUpdate, user_id: str, current_user=Depends(get_current_user),
-                      db=Depends(get_db), user=Depends(get_user_by_id)):
+@router.put('/measurement/{user_id}', response_model=Union[MaleMeasurementInfo, FemaleMeasurementInfo])
+def update_user_measurement(req_body: MeasurementUpdate,
+                            user_id: str, 
+                            current_user=Depends(get_current_user),
+                            db=Depends(get_db), user=Depends(get_user_by_id)):
     if user_id != current_user.id:
-        print("this is user_id ", user_id, "this is current_user.id:  ", current_user.id)
         raise HTTPException(status_code=401, detail="Unauthorized request")
     if not user:
         raise HTTPException(status_code=404, detail="User not found with the id")
     update = update_measurement(user_id, req_body, db)
-    if req_body.measurement_type not in MEASUREMENT_TYPES:
-        raise HTTPException(status_code=422, detail="measurement_type not a valid type")
     update = update_measurement(user_id, req_body, db)
     if update:
         if update['measurement_type'] == "male":   
              return MaleMeasurementInfo(**update)
         elif update['measurement_type'] == "female":
              return  FemaleMeasurementInfo(**update)
-        else:
-             return KidMeasurementInfo(**update)
+
 

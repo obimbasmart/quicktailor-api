@@ -1,7 +1,9 @@
-from pydantic import BaseModel, UUID4, Field, computed_field, EmailStr, root_validator, validator
+from pydantic import BaseModel, UUID4, Field, computed_field, EmailStr, ConfigDict, field_validator
+from src.auth.schemas import BaseUser
 from typing import Union, List, Optional
 import re
 from .constants import VALID_MEASUREMENT_NAMES
+from models import Gender
 
 class Location(BaseModel):
     state: str
@@ -10,18 +12,6 @@ class Location(BaseModel):
 
 class SuccessMsg(BaseModel):
     message: str
-
-class BaseOptional(BaseModel):
-    @root_validator(pre=True)
-    def check_fields(cls, values):
-        valid_fields = set(cls.__fields__.keys())
-        provided_fields = set(values.keys())
-        if not provided_fields.issubset(valid_fields):
-            invalid_fields = provided_fields - valid_fields
-            raise ValueError(f"Invalid fields provided: {', '.join(invalid_fields)}")
-        if not any(values.values()):
-            raise ValueError("At least one field must be provided for update")
-        return values
 
 
 class UserInfo(BaseModel):
@@ -33,6 +23,7 @@ class UserInfo(BaseModel):
     address: Location | None
     is_online: bool
     email_is_verified: bool
+
 class FemaleMeasurementInfo(BaseModel):
     burst: float
     waist: float
@@ -54,12 +45,9 @@ class MaleMeasurementInfo(BaseModel):
     neck: float
     laps: float
     knee: float
-class KidMeasurementInfo(BaseModel):
-    waist: float
-    neck: float
 
-class MeasurementUpdate(BaseOptional):
-    measurement_type: str = "male"
+class MeasurementUpdate(BaseModel):
+    measurement_type: Gender = "MALE"
     shoulder: Optional[float] = None
     waist: Optional[float] = None
     neck: Optional[float] = None
@@ -77,38 +65,14 @@ class MeasurementUpdate(BaseOptional):
     round_sleeve: Optional[float] = None
 
 
-class UpdateFields(BaseOptional):
-    username: Optional[str] = Field(None, pattern=r'^[A-Za-z][A-Za-z0-9_]{3,20}$')
-    email: Optional[EmailStr] = None
-    phone: Optional[str] = Field(None, max_length=11)
-    gender: Optional[str] = None
+class UpdateFields(BaseModel):
+    password: str = Field(None, pattern=r'^(?=.*?[A-Z])(?=.*?[a-z])(?=.*?[0-9])(?=.*?[#?!@$%^&*-]).{8,}$')
+    username: str = Field(None, pattern=r'^[A-Za-z][A-Za-z0-9_]{3,20}$')
+    email: str = None
+    phone: str = Field(None, max_length=11)
+    gender: Gender | None = None
     address: Optional[Location] = None
-    password: Optional[str] = None
 
-    @validator('gender')
-    def validate_gender(cls, v):
-        if v and v not in ['male', 'female', 'other']:
-            raise ValueError("Gender must be 'male', 'female', or 'other'")
-        return v
-
-    @validator('password')
-    def validate_password(cls, v):
-        if v:
-            if len(v) < 8:
-                raise ValueError("Password must be at least 8 characters long")
-            if not any(c.islower() for c in v):
-                raise ValueError("Password must contain at least one lowercase letter")
-            if not any(c.isupper() for c in v):
-                raise ValueError("Password must contain at least one uppercase letter")
-            if not any(c.isdigit() for c in v):
-                raise ValueError("Password must contain at least one digit")
-            if not any(c in "@$#!%*?&" for c in v):
-                raise ValueError("Password must contain at least one special character (@$!%*?&)")
-        return v
-
-
-    @validator('phone')
-    def phone_valid(cls, v):
-        if v and not v.isdigit():
-            raise ValueError('Phone number must contain only digits')
-        return v
+    class Config:
+        extra='forbid'
+        regex_engine='python-re'

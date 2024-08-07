@@ -37,8 +37,8 @@ class BaseModel(Base):
 
 
 class Gender(_Enum):
-    MALE = 0
-    FEMALE = 1
+    MALE = 'MALE'
+    FEMALE = 'FEMALE'
 
 
 class BaseUser(BaseModel):

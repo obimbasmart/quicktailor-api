@@ -1,5 +1,6 @@
 from fastapi import APIRouter, Depends, File, UploadFile
 from src.tailors.dependencies import get_current_tailor, get_current_user
+from src.admin.dependencies import get_current_admin_or_tailor
 from src.users.CRUD import get_users
 from src.users.schemas import UserInfo
 from dependencies import get_db
@@ -39,7 +40,7 @@ async def upload_message_media(file: UploadFile,
 
 
 @router.get('/products/fabrics', response_model=List[FabricItem])
-async def get_list_of_fabrics(user=Depends(get_current_tailor),
+async def get_list_of_fabrics(user=Depends(get_current_admin_or_tailor),
                               db=Depends(get_db)):
     fabrics = _get_list_of_fabrics(db)
     return fabrics
