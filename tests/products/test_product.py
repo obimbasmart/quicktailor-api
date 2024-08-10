@@ -8,7 +8,7 @@ def test_create_product_success(access_token_tailor, product_data):
     res = client.post('/products', json=product_data.model_dump(),
                       headers=access_token_tailor['header'])
 
-    assert res.status_code == 201
+    assert res.status_code == status.HTTP_201_CREATED
     BaseResponse.model_validate(res.json())
 
 
@@ -21,17 +21,22 @@ def test_create_product_failure_unauthorized(product_data):
 def test_create_product_failure_access_denied(access_token_user, product_data):
     res = client.post('/products', json=product_data.model_dump(),
                       headers=access_token_user['header'])
-    assert res.status_code == 403
+    assert res.status_code == status.HTTP_403_FORBIDDEN
     assert res.json()['detail']
 
 
-def test_get_products(access_token_user, access_token_tailor):
-    user_res = client.get('/products', headers=access_token_user['header'])
-    tailor_res = client.get('/products', headers=access_token_user['header'])
+def test_get_products(access_token_user,
+                      access_token_tailor,
+                      access_token_admin):
+    res_u = client.get('/products', headers=access_token_user['header'])
+    res_t = client.get('/products', headers=access_token_tailor['header'])
+    res_a = client.get('/products', headers=access_token_admin['header'])
 
-    assert user_res.status_code == status.HTTP_200_OK == tailor_res.status_code
-    assert isinstance(user_res.json(), list)
-    [ProductListItem.model_validate(Item) for Item in user_res.json()]
+    assert res_u.status_code == status.HTTP_200_OK == res_t.status_code == res_a.status_code
+    assert isinstance(res_u.json(), list)
+    [ProductListItem.model_validate(Item) for Item in res_u.json()]
+    [ProductListItem.model_validate(Item) for Item in res_t.json()]
+    [ProductListItem.model_validate(Item) for Item in res_a.json()]
 
 
 def test_get_product(access_token_user, db_product_id):
@@ -67,3 +72,15 @@ def test_delete_product_access_denied(access_token_tailor_02, db_product_id):
         f'/products/{db_product_id}', headers=access_token_tailor_02['header'])
     assert res.status_code == status.HTTP_401_UNAUTHORIZED
     assert res.json()['detail']
+
+def test_update_product(access_token_tailor, db_product_id):
+    res = client.put(f'/products/{db_product_id}',
+                        headers=access_token_tailor['header'],
+                        json={'name': 'Red Asoebi'})
+    
+    assert res.status_code == status.HTTP_200_OK
+
+    res = client.get(f'/products/{db_product_id}',
+                     headers=access_token_tailor['header'])
+    assert res.status_code == status.HTTP_200_OK
+    assert res.json()['name'] == 'Red Asoebi'
