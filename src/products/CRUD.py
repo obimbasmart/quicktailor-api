@@ -61,6 +61,26 @@ def _create_custom_code(product_id: str, tailor_id: str, req_body: CreateCustomC
     return customCode.id[-8:]
 
 
+
+def _update_product(product_id: str, req_body: ProductUpload, db: Session):
+    product = _get_product(product_id, db)
+    if not product:
+        raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="Product Not found")
+
+    update_data = req_body.model_dump(exclude_unset=True, exclude=['fabrics', 'categories'])
+    [
+        setattr(product, attr, val)
+        for attr, val in update_data.items()
+    ]
+
+    if req_body.fabrics:
+        product.fabrics += get_fabric_objects(req_body.fabrics, db)
+    if req_body.categories:
+        product.categories += get_category_objects(req_body.categories, db)
+
+    db.commit()
+    return product
+
 def get_fabric_objects(names: List[str], db) -> List[Fabric]:
     fabric_objects = db.query(Fabric).filter(Fabric.name.in_(names)).all()
     return fabric_objects
