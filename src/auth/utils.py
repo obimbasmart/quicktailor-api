@@ -3,6 +3,7 @@ from .config import settings
 import jwt
 from src.users.models import User
 from src.tailors.models import Tailor
+from src.admin.models import Admin
 from fastapi import Depends
 from dependencies import get_db
 
@@ -19,5 +20,8 @@ def create_access_token(data: dict, expires_delta: timedelta | None = None):
 def get_by_email(email: str, db=None):
     user = db.query(User).filter(email==User.email).one_or_none()
     if not user:
-        return db.query(Tailor).filter(email==Tailor.email).one_or_none()
+        user = db.query(Tailor).filter(email==Tailor.email).one_or_none()
+
+    if not user:
+        user = db.query(Admin).filter(email==Admin.email).one_or_none()
     return user

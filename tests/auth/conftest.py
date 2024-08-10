@@ -1,19 +1,28 @@
-from src.auth.schemas import UserRegIn, Login
+from src.auth.schemas import UserRegIn, Login, TailorRegIn, AdminRegIn
 import pytest
+import tests.data as test_data
 
-_user_data_register = {
-                        "email" : "test@gmail.com", "username" : "test",
-                        "phone" : "09023473648", "password": "test_pwd",
-                        "password_2" : "test_pwd"
-                      }
-
-_login_data = {"email" : "test@gmail.com", "password": "test_pwd"}
 
 @pytest.fixture
 def user_data_register():
-    return UserRegIn(**_user_data_register)
+    return test_data.user_reg_obj
+
+
+@pytest.fixture
+def tailor_data_register():
+    return test_data.tailor_reg_obj
+
+
+@pytest.fixture
+def admin_data_register():
+    return test_data.admin_reg_obj
+
+
+@pytest.fixture
+def login_data_t():
+    return test_data._login_data_t
 
 
 @pytest.fixture
 def login_data():
-    return _login_data
+    return test_data._login_data_u

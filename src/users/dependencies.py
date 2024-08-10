@@ -6,7 +6,6 @@ from src.auth.schemas import UserRegIn
 
 def get_user_by_email(req_body : UserRegIn = Body(...), db: Session = Depends(get_db)) -> User:
     user = db.query(User).filter(req_body.email==User.email).one_or_none()
-    print(req_body)
     return user
 
 def get_user_by_id(user_id: str, db: Session = Depends(get_db)) -> User:

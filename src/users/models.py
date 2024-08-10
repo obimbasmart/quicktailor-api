@@ -8,5 +8,4 @@ class User(BaseUser):
     __tablename__ = "users"
     username = Column(String(60), nullable=False)
     measurement = Column(MutableList.as_mutable(JSON), nullable=True, default=[MALE_MEASUREMENTS, FEMALE_MEASUREMENTS])
-    is_admin = Column(Boolean, default=False)
     favorites = Column(NestedMutableJson, default=FAVORITES)

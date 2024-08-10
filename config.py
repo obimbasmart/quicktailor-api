@@ -5,16 +5,21 @@ from dotenv import load_dotenv
 load_dotenv()
 
 class Settings(BaseSettings):
-    SECRET_KEY: str= "70a89617b0e246cbb1a7357c94f39eb0"
+    SECRET_KEY: str
+    ADMIN_SSO: str
 
-class TestSettings(BaseSettings):
+    class Config:
+        env_file = '.env'
+        extra = 'allow'
+
+class TestSettings(Settings):
     DATABASE_URI: str = "sqlite:///./qt_test_app.db"
 
 class DevSettings(Settings):
     DATABASE_URI: str = "sqlite:///./sql_app.db"
 
 class ProdSettings(Settings):
-    DATABASE_URI: str = "postgresql://user:password@postgresserver/db"
+    DATABASE_URI: str = 'olegbyonic'
 
 
 settings = {

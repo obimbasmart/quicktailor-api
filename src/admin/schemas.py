@@ -22,6 +22,9 @@ class AdminTailorItem(AdminTailorListItem):
     address: Location | None
     created_at: datetime
     is_suspended: bool
+    cac_number: int | None
+    is_available: bool
+    is_suspended: bool
 
     @computed_field
     @property

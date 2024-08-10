@@ -11,7 +11,6 @@ class BaseUser(BaseModel):
     password: str = Field(
         ..., pattern=r'^(?=.*?[A-Z])(?=.*?[a-z])(?=.*?[0-9])(?=.*?[#?!@$%^&*-]).{8,}$')
     password_2: str
-    is_admin: bool = Field(default=False)
 
     @model_validator(mode='after')
     def check_passwords_match(self):
@@ -33,6 +32,9 @@ class TailorRegIn(BaseUser):
     class Config:
         extra = 'forbid'
 
+
+class AdminRegIn(BaseUser):
+    sso: str
 
 class Login(BaseModel):
     email: EmailStr

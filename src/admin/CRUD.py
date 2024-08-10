@@ -5,8 +5,30 @@ from sqlalchemy.exc import IntegrityError
 from fastapi import HTTPException, status
 from src.tailors.models import Tailor
 from src.users.models import User
+from src.auth.schemas import AdminRegIn
+from src.admin.models import Admin
+from config import get_settings
+from utils import generate_uuid
+
+settings = get_settings()
 
 
+
+def _create_admin(req_body: AdminRegIn, db: Session):
+    if req_body.sso != settings.ADMIN_SSO:
+        raise HTTPException(status_code=status.HTTP_400_BAD_REQUEST,
+                            detail='The provided SSO code is not valid!')
+    
+    admin = Admin(**req_body.model_dump(exclude=['password_2', 'password']))
+    admin.set_password(req_body.password)
+    admin.message_key = generate_uuid()
+
+    db.add(admin)
+    db.commit()
+    db.refresh(admin)
+    return admin
+
+    
 def _create_fabrics(fabrics: List[str], db: Session):
     fabric_obj = [Fabric(name=name) for name in fabrics]
     db.add_all(fabric_obj)
