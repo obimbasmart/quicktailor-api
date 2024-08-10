@@ -29,6 +29,9 @@ class Product(BaseModel):
 
     tailor = relationship("Tailor", back_populates="products")
     # reviews = relationship('Review', back_populates='product')
+    carts =  relationship("Cart", back_populates="product")
+    orders = relationship("Order", back_populates="product")
+
 
     fabrics = relationship("Fabric", secondary=product_fabric, back_populates="products")
     categories = relationship("Category", secondary=product_category, back_populates="products")

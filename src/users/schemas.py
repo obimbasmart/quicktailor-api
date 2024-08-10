@@ -4,6 +4,8 @@ from typing import Union, List, Optional
 import re
 from .constants import VALID_MEASUREMENT_NAMES
 from models import Gender
+from src.tailors.schemas import  TailorListItem
+from src.products.schemas import ProductItem
 
 class Location(BaseModel):
     state: str
@@ -63,6 +65,12 @@ class MeasurementUpdate(BaseModel):
     full_length: Optional[float] = None
     half_length: Optional[float] = None
     round_sleeve: Optional[float] = None
+   
+    class Config:
+        json_encoders = {
+        Gender: lambda v: v.value
+        }
+        extra='forbid'
 
 
 class UpdateFields(BaseModel):
@@ -76,3 +84,13 @@ class UpdateFields(BaseModel):
     class Config:
         extra='forbid'
         regex_engine='python-re'
+
+
+class FavoriteResponse(BaseModel):
+    tailors: list[TailorListItem]
+    products: list[ProductItem]
+
+class AddFavorite(BaseModel):
+    tailor_id: Optional[str] = None
+    product_id: Optional[str] =  None
+

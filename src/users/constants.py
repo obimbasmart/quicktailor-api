@@ -1,5 +1,5 @@
 MALE_MEASUREMENTS = {
-    "measurement_type": "male",
+    "measurement_type": "MALE",
     **{name: 0.0 for name in [
         "chest_burst", "stomach", "top_length", "shoulder",
         "sleeve_length", "neck", "muscle", "waist", "laps",
@@ -8,7 +8,7 @@ MALE_MEASUREMENTS = {
 }
 
 FEMALE_MEASUREMENTS = {
-    "measurement_type": "female",
+    "measurement_type": "FEMALE",
     **{name: 0.0 for name in [
         "burst", "waist", "hips", "shoulder",
         "full_length", "half_length", "round_sleeve", "neck"

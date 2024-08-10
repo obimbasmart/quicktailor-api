@@ -3,6 +3,7 @@ from sqlalchemy_json import NestedMutableJson
 from models import BaseModel
 from datetime import datetime, timezone
 from enum import Enum as _Enum
+from sqlalchemy.orm import relationship
 
 class UNIT(_Enum):
     NAIRA = 0
@@ -24,3 +25,5 @@ class CustomizationCode(BaseModel):
     expires_in = Column(DateTime, nullable=False)
     start_date = Column(DateTime, default= lambda: datetime.now(tz=timezone.utc))
     is_active = Column(Boolean, default=True)
+
+    orders = relationship('Order', back_populates='customization_code')

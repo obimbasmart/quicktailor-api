@@ -24,3 +24,4 @@ class Tailor(BaseUser):
     language = Column(NestedMutableJson, nullable=True)
 
     products = relationship('Product', back_populates="tailor")
+    orders = relationship("Order", back_populates="tailor")

@@ -18,6 +18,11 @@ _user_email_02 = 'tester02@gmail.com'
 _admin_email_01 = 'admin@gmail.com'
 _admin_email_02 = 'admin02@gmail.com'
 
+product_info = ProductUpload(name='test_product', price=43000.0, description="lorem ipsum delarmo",
+                             estimated_tc=2, fabrics=["ankara"], categories=["senator"], colors=["red", "blue"],
+                             images=["img-0", 'img-1'], is_active=True)
+
+
 _user_data_register = {
     "username": "tester",
     "phone": "09023473648",

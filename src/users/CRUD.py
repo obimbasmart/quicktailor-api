@@ -1,6 +1,6 @@
 from src.auth.schemas import UserRegIn
 from .models import User
-from src.users.schemas import UpdateFields, MeasurementUpdate
+from src.users.schemas import UpdateFields, MeasurementUpdate, AddFavorite
 from sqlalchemy.orm import Session
 from utils import generate_uuid
 from pydantic import UUID4
@@ -47,11 +47,14 @@ def update_measurement(user_id: str, update_data: UpdateFields, db: Session):
     # Update the user fields if they are provided in update_data
     update_fields = update_data.dict(exclude_unset=True)
     measurement_type = update_fields.get("measurement_type")
-    measurement_tmp =[] 
+    measurement_tmp = []
     updated_measurement = None
+
     if 'measurement_type' in update_fields:
-        # Remove measurement_type from update_fields since it should not be part of the measurement object
-        update_fields.pop("measurement_type")
+        # Convert the Enum to its string value
+        measurement_type = measurement_type.value
+        update_fields['measurement_type'] = measurement_type
+
     updated = False
 
     # Check and update the measurements
@@ -63,17 +66,37 @@ def update_measurement(user_id: str, update_data: UpdateFields, db: Session):
             updated = True
             updated_measurement = measurement
         measurement_tmp.append(measurement)
+
     if not updated:
         new_measurement = {"measurement_type": measurement_type, **update_fields}
         updated_measurement = new_measurement
         user.measurement.append(new_measurement)
     else:
-        user.measurement = []
-        for m in measurement_tmp:
-            user.measurement.append(m)
+        user.measurement = [m for m in measurement_tmp]
 
     # Commit the changes to the database
     db.commit()
     db.refresh(user)
     return updated_measurement
 
+def add_favorite(user_id: str, update_data: AddFavorite, db: Session):
+    user = db.query(User).filter(User.id == user_id).one_or_none()
+
+    update_fields = update_data.dict(exclude_unset=True)
+    tmp_favorites = user.favorites.copy()
+    for k, v in tmp_favorites.items():
+        for key, value in update_fields.items():
+            if value != None:
+                if key[:5] in k:
+                    if value not in v:
+                        user.favorites[k].append(value)
+                    else:
+                        user.favorites[k].remove(value)
+
+                        print("Thise" in "Thiser")
+    print(user.favorites, " here are we all time here again ago")
+   
+   # Commit the changes to the database
+    db.commit()
+    db.refresh(user)
+    return SUCCESSFUL_UPDATE

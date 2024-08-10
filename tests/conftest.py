@@ -34,6 +34,11 @@ def create_new_user(user_details, user_type: str = 'user') -> Dict:
             'header': {"Authorization": f'Bearer {res_l.json()["access_token"]}'}
         }
 
+def create_new_product(access_token_tailor):
+    res = client.post('/products', json=test_data.product_info.model_dump(), headers=access_token_tailor['header'])
+    assert res.status_code == 201
+    return res.json()['id']
+
 
 @pytest.fixture
 def access_token_tailor(reset_db):
@@ -62,3 +67,10 @@ def access_token_admin(reset_db) -> str:
 @pytest.fixture
 def access_token_fake_admin(reset_db) -> str:
     return create_new_user(test_data.admin_reg_obj_fake_sso, 'admin')
+
+@pytest.fixture
+def product_01(reset_db):
+    def product_creation(tailor_header):
+        return create_new_product(tailor_header)
+    return product_creation
+
