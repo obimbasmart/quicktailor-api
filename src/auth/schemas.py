@@ -26,8 +26,8 @@ class UserRegIn(BaseUser):
 
 
 class TailorRegIn(BaseUser):
-    first_name: str = Field(..., pattern=r'^[A-Za-z][A-Za-z0-9_]{4,20}$')
-    last_name: str = Field(..., pattern=r'^[A-Za-z][A-Za-z0-9_]{4,20}$')
+    first_name: str = Field(..., pattern=r'^[A-Za-z][A-Za-z0-9_]{3,20}$')
+    last_name: str = Field(..., pattern=r'^[A-Za-z][A-Za-z0-9_]{3,20}$')
 
     class Config:
         extra = 'forbid'

@@ -22,14 +22,12 @@ def reset_db():
 
 
 def create_new_user(user_details, user_type: str = 'user') -> Dict:
-    res_r = client.post(f'/auth/register/{user_type}',
-                        json=user_details.model_dump())
+    res_r = client.post(f'/auth/register/{user_type}', json=user_details.model_dump())
     
     if res_r.status_code != 201:
-        raise HTTPException(res_r.status_code,
-                            'User can\'t be created')
-    res_l = client.post(
-        "/auth/login", json=user_details.model_dump(include=["email", "password"]))
+        return res_r
+    
+    res_l = client.post("/auth/login", json=user_details.model_dump(include=["email", "password"]))
     return \
         {
             'id': res_l.json()['data']['id'],

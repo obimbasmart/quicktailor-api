@@ -41,9 +41,9 @@ _admin_data_register = {
     'password_2': 'Admin@gmail1'
 }
 
-_login_data_u = {"email": "tester@gmail.com", "password": "Test@user1"}
-_login_data_t = {"email": "tailor@gmail.com", "password": "Tailor@gmail1"}
-_login_data_a = {"email": "admin@gmail.com", "password": "Admin@gmail1"}
+_login_data_u = {"email": _user_email_01, "password": _user_data_register.get('password')}
+_login_data_t = {"email": _tailor_email_01, "password": _tailor_data_register.get('password')}
+_login_data_a = {"email": _admin_email_01, "password": _admin_data_register.get('password')}
 
 
 tailor_reg_obj = TailorRegIn(**_tailor_data_register, email=_tailor_email_01)

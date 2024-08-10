@@ -26,3 +26,7 @@ def login_data_t():
 @pytest.fixture
 def login_data():
     return test_data._login_data_u
+
+@pytest.fixture
+def login_data_a():
+    return test_data._login_data_a
