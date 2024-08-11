@@ -21,7 +21,7 @@ class Order(BaseModel):
     measurement = Column(MutableDict.as_mutable(JSON), nullable=True, default={})
     stages = Column(MutableList.as_mutable(JSON), nullable=True, default=[])
     customization_code_id = Column(String(60), ForeignKey('customization_codes.id'), nullable=True)
-
+ 
     user = relationship("User", back_populates="orders")
     product = relationship("Product", back_populates="orders")
     tailor = relationship("Tailor", back_populates="orders")
