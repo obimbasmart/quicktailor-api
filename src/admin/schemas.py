@@ -2,6 +2,7 @@ from pydantic import BaseModel, EmailStr, computed_field
 from uuid import UUID
 from datetime import datetime
 from src.users.schemas import Location
+from typing import Optional
 
 class AdminTailorListItem(BaseModel):
     id: UUID
@@ -10,7 +11,7 @@ class AdminTailorListItem(BaseModel):
     brand_name: str | None
     email: EmailStr
     photo: str | None
-    is_verified: bool
+    nin_is_verified: bool
 
 class AdminUserListItem(BaseModel):
     id: UUID
@@ -40,3 +41,12 @@ class AdminTailorItem(AdminTailorListItem):
     @property
     def no_pending_orders(self) -> float:
         return 0.0
+
+class AdminTailorUpdate(BaseModel):
+    nin_is_verified: Optional[bool] = None
+    is_verified: Optional[bool] = None
+    is_suspended: Optional[bool] = None
+    is_enabled: Optional[bool] = None
+
+    class Config:
+        extra = 'forbid'

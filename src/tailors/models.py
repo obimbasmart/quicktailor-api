@@ -1,7 +1,7 @@
 from sqlalchemy import Boolean, Column, String, DATETIME, TEXT
 from sqlalchemy_json import NestedMutableJson
 from models import BaseUser
-from sqlalchemy.orm import relationship
+from sqlalchemy.orm import relationship, Session
 
 class Tailor(BaseUser):
     __tablename__ = "tailors"
@@ -17,6 +17,7 @@ class Tailor(BaseUser):
     photo = Column(TEXT, nullable=True)
     nin_photo = Column(TEXT, nullable=True)
     is_available = Column(Boolean, default=False)
+    is_enabled = Column(Boolean, default=False)
     is_verified = Column(Boolean, default=False)
     is_suspended = Column(Boolean, default=False)
     nin_is_verified = Column(Boolean, default=False)
@@ -25,3 +26,12 @@ class Tailor(BaseUser):
 
     products = relationship('Product', back_populates="tailor")
     orders = relationship("Order", back_populates="tailor")
+
+    def check_and_activate(self, db: Session):
+        if all([
+            self.first_name, self.last_name,
+            self.nin_is_verified, self.about,
+            self.brand_name, self.photo
+        ]):
+            self.is_enabled = True
+            db.commit()

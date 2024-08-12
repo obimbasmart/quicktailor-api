@@ -36,30 +36,31 @@ def get_tailor_reviews(tailor_id: UUID4,
                        current_user=Depends(get_current_tailor),
                        db=Depends(get_db),
                        tailor=Depends(get_tailor_by_id)):
-    
+
     if not tailor:
         raise HTTPException(status_code=status.HTTP_404_NOT_FOUND,
                             detail='Tailor not found')
-    
+
     if tailor.id != current_user.id:
         raise HTTPException(status_code=status.HTTP_401_UNAUTHORIZED,
                             detail='Access denied')
 
-
     update_data = req_body.model_dump(exclude_unset=True)
-    
+
     [
         setattr(tailor, attr, value)
         for attr, value in update_data.items()
         if attr not in ['first_name', 'last_name']
     ]
 
-    if not tailor.is_verified:
+    if not tailor.nin_is_verified:
         [
             setattr(tailor, attr, value)
             for attr, value in update_data.items()
             if attr in ['first_name', 'last_name']
         ]
+
+    tailor.check_and_activate(db)
 
     db.commit()
     db.refresh(tailor)
@@ -70,4 +71,19 @@ def get_tailor_reviews(tailor_id: UUID4,
 @router.get('/{tailor_id}/reviews', response_model=None)
 def get_tailor_reviews(tailor_id: UUID4, current_user=Depends(get_current_user),
                        db=Depends(get_db), tailor=Depends(get_tailor_by_id)):
+    return JSONResponse(status_code=200, content=[])
+
+
+
+@router.get('/{tailor_id}/verification')
+def update_verification_details(tailor_id: UUID4,
+                                current_user=Depends(get_current_tailor),
+                                db=Depends(get_db),
+                                tailor=Depends(get_tailor_by_id)):
+    
+    if tailor.id != current_user.id:
+        raise HTTPException(status.HTTP_401_UNAUTHORIZED,
+                            detail={'message': "Unauthorized access"})
+    
+    
     return JSONResponse(status_code=200, content=[])

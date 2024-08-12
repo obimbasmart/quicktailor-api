@@ -1,14 +1,14 @@
 from fastapi import APIRouter, Depends, HTTPException
 from src.tailors.dependencies import get_current_tailor
 from src.users.dependencies import get_current_user as current_user
-from src.products.schemas import ProductUpload, CreateCustomCode, TailorListInfo
+from src.products.schemas import TailorListInfo
 from src.auth.schemas import BaseResponse
-from src.products.CRUD import  _get_product, _create_custom_code
+from src.products.CRUD import  _get_product
 from dependencies import get_db
 from typing import List
 from fastapi.responses import JSONResponse
 from src.orders.schemas import (OrderItem, ProductItem,
-        UserItem, PaymentItem, UserOrderItem)
+        UserItem, UserOrderItem)
 from src.orders.CRUD import create_new_order
 from src.orders.dependencies import get_tailor_order, get_user_order
 from src.orders.models import OrderStatus

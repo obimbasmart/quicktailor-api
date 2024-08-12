@@ -25,3 +25,4 @@ def get_by_email(email: str, db=None):
     if not user:
         user = db.query(Admin).filter(email==Admin.email).one_or_none()
     return user
+

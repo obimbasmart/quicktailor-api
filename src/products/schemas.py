@@ -54,6 +54,23 @@ class ProductListItem(BaseModel):
         from_attributes = True
 
 class ProductUpload(BaseModel):
+    name: str
+    price: float
+    description: str
+    estimated_tc: int
+    is_active: bool
+    fabrics: List[str]
+    colors: List[str]
+    categories: List[str]
+    images: List = Field(..., max_length=4, min_length=2)
+    image_cover_index: int = Field(ge=0, le=4, default=0)
+
+    class Config:
+        extra = 'forbid'
+
+
+
+class ProductUpdate(BaseModel):
     name: Optional[str] = None
     price: Optional[float] = None
     description: Optional[str] = None
@@ -67,10 +84,6 @@ class ProductUpload(BaseModel):
 
     class Config:
         extra = 'forbid'
-
-class ProductUpdate(ProductUpload):
-    class Config:
-        fields = {field: {'default': None} for field in ProductUpload.__fields__}
 
 
 class Location(BaseModel):

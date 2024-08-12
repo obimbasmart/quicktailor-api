@@ -1,9 +1,9 @@
-from sqlalchemy import (Boolean, Column, String,  ForeignKey, Integer, Enum, JSON)
-from sqlalchemy_json import NestedMutableJson
+from sqlalchemy import (Column, String,  ForeignKey, Enum, JSON)
 from sqlalchemy.ext.mutable import MutableDict, MutableList
 from sqlalchemy.orm import relationship
-from models import BaseModel, Base
+from models import BaseModel
 from enum import Enum as PyEnum
+from src.orders.constants import ORDER_STAGES
 
 class OrderStatus(PyEnum):
     PENDING = "pending"
@@ -19,7 +19,7 @@ class Order(BaseModel):
     product_id = Column(String(60), ForeignKey('products.id'), nullable=False)
     status = Column(Enum(OrderStatus), default=OrderStatus.PENDING, nullable=False)
     measurement = Column(MutableDict.as_mutable(JSON), nullable=True, default={})
-    stages = Column(MutableList.as_mutable(JSON), nullable=True, default=[])
+    stages = Column(MutableDict.as_mutable(JSON), default=ORDER_STAGES)
     customization_code_id = Column(String(60), ForeignKey('customization_codes.id'), nullable=True)
  
     user = relationship("User", back_populates="orders")

@@ -44,6 +44,7 @@ class TailorItem(TailorListItem):
     first_name: str
     last_name: str
     email: EmailStr
+    is_enabled: bool
     phone: str
     about: str | None
     address: Location | None
@@ -58,6 +59,8 @@ class UpdateTailor(BaseModel):
     first_name: Optional[str] = None
     last_name: Optional[str] = None
     brand_name: Optional[str] = None
+    photo: Optional[str] = None
+    about: Optional[str] = None
     location: Optional[Location] = None
     bank_details: Optional[BankDetails] = None
     push_notification: Optional[bool] = None

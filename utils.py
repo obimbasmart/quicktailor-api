@@ -1,8 +1,9 @@
 import bcrypt
 from uuid import uuid4
 from pydantic import ValidationError
-from fastapi import Depends
-from dependencies import get_db
+from collections import defaultdict
+from fastapi import HTTPException
+from uuid import UUID
 
 
 def generate_password_hash(password: str):
@@ -17,7 +18,13 @@ def generate_uuid():
     _uuid = uuid4().hex
     return _uuid
 
-from collections import defaultdict
+def verify_resource_access(user_id_01: UUID, user_id_02: UUID):
+    if resource_id != user_id:
+        raise HTTPException(
+            status_code=status.HTTP_401_UNAUTHORIZED,
+            detail={"message": f"Unauthorized access"}
+        )    if user_id_01 != user_id_02:
+        raise H
 
 def format_validation_errors(exc: ValidationError):
     error_dict = defaultdict(list)
