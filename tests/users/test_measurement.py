@@ -3,7 +3,7 @@ from src.users.schemas import UserInfo, SuccessMsg, FemaleMeasurementInfo, MaleM
 from uuid import uuid4
 import pytest
 from pydantic import ValidationError
-from utils import generate_uuid
+from utils_ import generate_uuid
 import json  
 
 def test_get_user_measurement(access_token_user, reset_db):

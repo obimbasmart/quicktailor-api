@@ -2,7 +2,7 @@
 from src.auth.schemas import TailorRegIn
 from .models import Tailor
 from sqlalchemy.orm import Session
-from utils import generate_uuid
+from utils_ import generate_uuid
 
 
 def create_tailor(tailor: TailorRegIn, db: Session):

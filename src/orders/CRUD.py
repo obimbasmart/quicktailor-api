@@ -1,7 +1,7 @@
 from src.auth.schemas import UserRegIn
 from src.users.schemas import UpdateFields, MeasurementUpdate, AddFavorite
 from sqlalchemy.orm import Session
-from utils import generate_uuid
+from utils_ import generate_uuid
 from pydantic import UUID4
 from src.users.constants import SUCCESSFUL_UPDATE
 from src.orders.schemas import OrderItem

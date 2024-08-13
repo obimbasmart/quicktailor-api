@@ -3,7 +3,7 @@ from src.users.schemas import UserInfo, SuccessMsg
 from uuid import uuid4
 import pytest
 from pydantic import ValidationError
-from utils import generate_uuid
+from utils_ import generate_uuid
 
 def test_update_user_success(access_token_user, info_update_fields, reset_db):
 

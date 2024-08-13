@@ -8,7 +8,7 @@ from uuid import uuid4
 from src.carts.schemas import CartItems
 import pytest
 from pydantic import ValidationError
-from utils import generate_uuid
+from utils_ import generate_uuid
 import json
 from typing import List
 

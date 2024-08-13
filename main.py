@@ -9,7 +9,7 @@ from src.utils.routers import router as utils_router
 from src.carts.routers import router as cart_router
 from database import Base, engine
 from fastapi.exceptions import RequestValidationError
-from utils import format_validation_errors
+from utils_ import format_validation_errors
 from fastapi.testclient import TestClient
 
 

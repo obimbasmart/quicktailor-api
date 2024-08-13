@@ -4,10 +4,12 @@ from src.auth.dependencies import get_current_user
 from src.tailors.CRUD import get_tailors
 from src.tailors.dependencies import get_tailor_by_id, get_current_tailor
 from src.tailors.schemas import TailorItem, TailorListItem, UpdateTailor
+from src.reviews.schemas import ProductReviewItem
 from dependencies import get_db
 from typing import List
 from pydantic import UUID4
 from fastapi import HTTPException
+from utils_ import verify_resource_access
 
 
 router = APIRouter(
@@ -26,12 +28,11 @@ def get_all_tailors(current_user=Depends(get_current_user),
 @router.get('/{tailor_id}', response_model=TailorItem)
 def get_single_tailor(tailor_id: UUID4, current_user=Depends(get_current_user),
                       db=Depends(get_db), tailor=Depends(get_tailor_by_id)):
-    print(current_user.id)
     return tailor
 
 
 @router.put('/{tailor_id}', response_model=None)
-def get_tailor_reviews(tailor_id: UUID4,
+def update_tailor(tailor_id: str,
                        req_body: UpdateTailor,
                        current_user=Depends(get_current_tailor),
                        db=Depends(get_db),
@@ -41,9 +42,7 @@ def get_tailor_reviews(tailor_id: UUID4,
         raise HTTPException(status_code=status.HTTP_404_NOT_FOUND,
                             detail='Tailor not found')
 
-    if tailor.id != current_user.id:
-        raise HTTPException(status_code=status.HTTP_401_UNAUTHORIZED,
-                            detail='Access denied')
+    verify_resource_access(tailor_id, current_user.id)
 
     update_data = req_body.model_dump(exclude_unset=True)
 
@@ -68,11 +67,17 @@ def get_tailor_reviews(tailor_id: UUID4,
                         content={"message": "Update successfull"})
 
 
-@router.get('/{tailor_id}/reviews', response_model=None)
-def get_tailor_reviews(tailor_id: UUID4, current_user=Depends(get_current_user),
-                       db=Depends(get_db), tailor=Depends(get_tailor_by_id)):
-    return JSONResponse(status_code=200, content=[])
+@router.get('/{tailor_id}/reviews', response_model=List[ProductReviewItem])
+def get_tailor_reviews(tailor_id: UUID4,
+                       current_user=Depends(get_current_user),
+                       db=Depends(get_db),
+                       tailor=Depends(get_tailor_by_id)):
 
+    if not tailor:
+        raise HTTPException(status_code=status.HTTP_404_NOT_FOUND,
+                            detail='Tailor not found')
+
+    return JSONResponse(status_code=200, content=[])
 
 
 @router.get('/{tailor_id}/verification')
@@ -80,10 +85,9 @@ def update_verification_details(tailor_id: UUID4,
                                 current_user=Depends(get_current_tailor),
                                 db=Depends(get_db),
                                 tailor=Depends(get_tailor_by_id)):
-    
+
     if tailor.id != current_user.id:
         raise HTTPException(status.HTTP_401_UNAUTHORIZED,
                             detail={'message': "Unauthorized access"})
-    
-    
+
     return JSONResponse(status_code=200, content=[])

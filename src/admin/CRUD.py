@@ -10,7 +10,7 @@ from src.admin.models import Admin
 from src.admin.schemas import AdminTailorUpdate
 from src.admin.utils import TailorState
 from config import get_settings
-from utils import generate_uuid
+from utils_ import generate_uuid
 
 settings = get_settings()
 
