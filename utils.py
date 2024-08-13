@@ -19,12 +19,8 @@ def generate_uuid():
     return _uuid
 
 def verify_resource_access(user_id_01: UUID, user_id_02: UUID):
-    if resource_id != user_id:
-        raise HTTPException(
-            status_code=status.HTTP_401_UNAUTHORIZED,
-            detail={"message": f"Unauthorized access"}
-        )    if user_id_01 != user_id_02:
-        raise H
+    if user_id_01 != user_id_02:
+        raise HTTPException(status_code=401, detail="Unauthorized access")
 
 def format_validation_errors(exc: ValidationError):
     error_dict = defaultdict(list)

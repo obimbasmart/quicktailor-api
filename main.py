@@ -5,8 +5,8 @@ from src.tailors.routers import router as tailor_router
 from src.products.routers import router as product_router
 from src.users.routers import router as user_router
 from src.admin.routers import router as admin_router
+from src.orders.routers import router as orders_router
 from src.utils.routers import router as utils_router
-from src.carts.routers import router as cart_router
 from database import Base, engine
 from fastapi.exceptions import RequestValidationError
 from utils import format_validation_errors
@@ -24,7 +24,7 @@ def create_app():
     app.include_router(user_router)
     app.include_router(admin_router)
     app.include_router(utils_router)
-    app.include_router(cart_router)
+    app.include_router(orders_router)
 
     Base.metadata.create_all(bind=engine)
 

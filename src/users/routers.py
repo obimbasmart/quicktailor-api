@@ -1,29 +1,34 @@
 from fastapi import APIRouter, Depends, status, HTTPException
 from fastapi.responses import JSONResponse
-from src.users.CRUD import get_users, update_user, update_measurement, add_favorite
-from src.users.dependencies import get_user_by_id, get_current_user
-from src.users.schemas import (UserInfo, AddFavorite,  UpdateFields, FavoriteResponse, 
-        SuccessMsg, FemaleMeasurementInfo,  MaleMeasurementInfo, MeasurementUpdate)
-from dependencies import get_db
 from typing import List, Union
 from pydantic import UUID4, ValidationError
-from src.users.utils import get_user_via_email, get_products, get_tailors
-from src.tailors.dependencies import get_tailor_by_id
+from dependencies import get_db
+from src.auth.schemas import BaseResponse
+from src.users.CRUD import get_users, update_user, update_measurement, add_favorite
+from src.users.dependencies import get_user_by_id, get_current_user
 from src.users.constants import MEASUREMENT_TYPES
-from src.products.schemas import ProductItem
+from src.users.utils import get_user_via_email, get_products, get_tailors
+from src.users.schemas import (UserInfo, AddFavorite,  UpdateFields, FavoriteResponse, 
+        SuccessMsg, FemaleMeasurementInfo,  MaleMeasurementInfo, MeasurementUpdate)
+from src.tailors.dependencies import get_tailor_by_id, get_current_tailor
+from src.products.schemas import ProductItem, TailorListInfo
 from src.products.models.product import Product
 from src.products.CRUD import _get_product
+from src.reviews.schemas import UploadReview
+from src.reviews.CRUD import create_new_review
+from src.carts.CRUD import add_cart, remove_cart, get_cart
+from src.carts.schemas import CartItems, AddCart, TailorInfo, RemoveCart, ProductInfo
+from src.orders.schemas import (OrderItem, ProductItem,
+        UserItem, UserOrderItem)
+from src.orders.dependencies import get_user_order
+from src.orders.CRUD import create_new_order, update_order_status, update_order_stage_status
+from src.orders.models import OrderStatus
+from src.orders.constants import OrderStageStatus
 
 router = APIRouter(
     prefix="/users",
     tags=["users"],
 )
-
-@router.get('', response_model=List[UserInfo])
-async def get_all_users(current_user=Depends(get_current_user),
-                    db=Depends(get_db)):
-    users = get_users(db)
-    return users
 
 @router.get('/{user_id}', response_model=UserInfo)
 async def get_single_user(user_id: UUID4, current_user=Depends(get_current_user),
@@ -35,15 +40,12 @@ async def get_single_user(user_id: UUID4, current_user=Depends(get_current_user)
 
 @router.put('/{user_id}', response_model=SuccessMsg)
 async def update_user_route(req_body: UpdateFields,  user_id: str, current_user=Depends(get_current_user),
-                      db=Depends(get_db), user = Depends(get_user_by_id)):
+                      db=Depends(get_db)):
     verify_email = get_user_via_email(req_body.email, db)
     if current_user.email == req_body.email:
         raise HTTPException(status_code=422, detail="This is your present Email")
     if verify_email:
         raise HTTPException(status_code=422, detail="Email is Already in use")
-    print("request body",verify_email)
-    if not user:
-        raise HTTPException(status_code=404, detail="User not found with the id")
     if current_user.id != user_id:
         raise HTTPException(status_code=401, detail="Unauthorized request")
 
@@ -90,25 +92,20 @@ async def get_user_favorite(
 ):
     if user_id != current_user.id:
         raise HTTPException(status_code=401, detail="Unauthorized request")
-    
     if not user:
         raise HTTPException(status_code=404, detail="User not found with the id")
     
     tailors = []
     products = []
-    
     if user.favorites.get('tailors'):
         tailors = get_tailors(user.favorites['tailors'], db)
-    
     if user.favorites.get('products'):
         products = get_products(user.favorites['products'], db)
-
     
     return FavoriteResponse(
         tailors=tailors,
         products=products
     )
-
 
 @router.put('/favorites/{user_id}', response_model=SuccessMsg)
 def update_user_favorite(req_body: AddFavorite, user_id: str, current_user=Depends(get_current_user),
@@ -122,7 +119,6 @@ def update_user_favorite(req_body: AddFavorite, user_id: str, current_user=Depen
     if req_body.product_id:
         if not _get_product(req_body.product_id, db):
             raise HTTPException(status_code=404, detail="product_id not valid")
-
     if not user:
         raise HTTPException(status_code=404, detail="User not found with the id")
     update = add_favorite(user_id, req_body, db)
@@ -130,3 +126,102 @@ def update_user_favorite(req_body: AddFavorite, user_id: str, current_user=Depen
         raise HTTPException(status_code=500, detail="An Error has occured")
 
     return update
+
+@router.get('/{user_id}/carts', response_model=List[CartItems])
+async def get_user_carts(user_id: str,
+                current_user=Depends(get_current_user),
+                db=Depends(get_db)):
+    if user_id != current_user.id:
+        raise HTTPException(status_code=401, detail="Unauthorized arekar request")
+    response = []
+    if current_user.carts:
+        response =( [CartItems(id=cart.id, tailor = TailorInfo(**cart.product.tailor.__dict__),
+            product = ProductInfo(**cart.product.__dict__)) for cart in current_user.carts])
+    return response
+
+@router.post('/{user_id}/carts', response_model=BaseResponse)
+async def add_new_cart(req_body: AddCart, user_id: str,
+                current_user=Depends(get_current_user),
+                db=Depends(get_db)):
+    if user_id != current_user.id:
+        raise HTTPException(status_code=401, detail="Unauthorized request")
+
+    #used to verify product_id before proceeding
+    _get_product(req_body.product_id, db)
+
+    if add_cart(user_id, req_body, db):
+        return {"message": "Cart Added successfully"}
+
+    raise HTTPException(status_code=501, detail="An unexepcted Error Occurred")
+
+@router.delete('/{user_id}/carts/{cart_id}', response_model=BaseResponse)
+async def delete_cart(cart_id: str, user_id: str,
+                current_user=Depends(get_current_user),
+                db=Depends(get_db)):
+
+    #used to verify product_id before proceeding
+    cart =get_cart(cart_id, db)
+    if cart.user_id != current_user.id or user_id != current_user.id:
+        raise HTTPException(status_code=401, detail="Unauthorized request")
+
+    if remove_cart(cart_id, db):
+        return {"message": "Cart removed successfully"}
+
+    raise HTTPException(status_code=501, detail="An unexepcted Error Occurred")
+
+@router.post('/{user_id}/orders', response_model=BaseResponse)
+def create_order(req_body: OrderItem, user_id: str,
+                   current_user=Depends(get_current_user),
+                   db=Depends(get_db)):
+    if user_id != current_user.id:
+        raise HTTPException(status_code=401, detail="Unauthorized access")
+
+    product = _get_product(req_body.product_id, db)
+    new_order = create_new_order(user_id, product.tailor_id, req_body, db)
+    return JSONResponse(status_code=201, content={'message': 'success', "id": new_order.id})
+
+
+@router.get('/{user_id}/orders/{order_id}', response_model=UserOrderItem)
+def get_current_user_order(user_id: str, order_id: str, current_user=Depends(get_current_user),
+                   db=Depends(get_db)):
+    if current_user.id !=  user_id:
+        raise HTTPException(status_code=401, detail="Unauthorized request")
+    order = get_user_order(order_id, user_id,  db)
+    tailor = TailorListInfo(**order.tailor.__dict__)
+    user = UserItem(**order.user.__dict__)
+    product = ProductItem(**{**order.product.__dict__, "image":order.product.images[0]})
+    user_order = UserOrderItem(
+        **{**order.__dict__,
+        "completion_date": order.created_at if order.status == OrderStatus.DELIVERED  else None,
+        "tailor": tailor,
+        "product": product,
+        "user":user})
+    return user_order
+
+
+@router.get('/{user_id}/orders', response_model=None)
+def get_current_tailor_order(user_id: str, current_user=Depends(get_current_user),
+                   db=Depends(get_db)):
+    if current_user.id != user_id:
+        raise HTTPException(status_code=401, detail="Unauthorized request")
+    orders = [UserOrderItem(
+        **{**order.__dict__,
+        "completion_date": order.created_at if order.status == OrderStatus.DELIVERED  else None,
+        "tailor": TailorListInfo(**order.tailor.__dict__),
+        "product": ProductItem(**{**order.product.__dict__, "image":order.product.images[0]}),
+        "user": UserItem(**order.user.__dict__)
+    }) for order in current_user.orders]
+
+    return orders
+
+
+@router.post('/{user_id}/orders/{order_id}/reviews', response_model=BaseResponse)
+def create_review(req_body: UploadReview, user_id: str, order_id: str, current_user=Depends(get_current_user),
+                      db=Depends(get_db),):
+    order = get_user_order(order_id, user_id, db)
+    if order.user_id != current_user.id or user_id != current_user.id:
+        raise HTTPException(status_code=401, detail="Unauthorized request")
+    new_review = create_new_review(req_body, user_id, order_id, db) 
+    if not new_review:
+        raise HTTPException(status_code=422, detail="you already submitted a review")
+    return {"message": "Review submitted successfully"}

@@ -3,8 +3,7 @@ from sqlalchemy.ext.mutable import MutableDict, MutableList
 from sqlalchemy.orm import relationship
 from models import BaseModel
 from enum import Enum as PyEnum
-from src.orders.constants import ORDER_STAGES
-
+from src.orders.constants import ORDER_STAGES, OrderStageStatus
 class OrderStatus(PyEnum):
     PENDING = "pending"
     IN_PROGRESS = "in_progress"
@@ -19,12 +18,21 @@ class Order(BaseModel):
     product_id = Column(String(60), ForeignKey('products.id'), nullable=False)
     status = Column(Enum(OrderStatus), default=OrderStatus.PENDING, nullable=False)
     measurement = Column(MutableDict.as_mutable(JSON), nullable=True, default={})
-    stages = Column(MutableDict.as_mutable(JSON), default=ORDER_STAGES)
+    stages = Column(MutableDict.as_mutable(JSON), default=lambda: Order.serialize_stages(ORDER_STAGES))
     customization_code_id = Column(String(60), ForeignKey('customization_codes.id'), nullable=True)
- 
+
     user = relationship("User", back_populates="orders")
     product = relationship("Product", back_populates="orders")
     tailor = relationship("Tailor", back_populates="orders")
     customization_code = relationship("CustomizationCode", back_populates="orders")
+    review = relationship("Review", back_populates="order")
 
+    @staticmethod
+    def serialize_stages(stages):
+        """Convert OrderStageStatus enums to their string representation."""
+        return {stage: {**details, 'status': details['status'].value} for stage, details in stages.items()}
 
+    @staticmethod
+    def deserialize_stages(stages):
+        """Convert strings back to OrderStageStatus enums."""
+        return {stage: {**details, 'status': OrderStageStatus(details['status'])} for stage, details in stages.items()}

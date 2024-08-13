@@ -29,7 +29,7 @@ class UserOrderItem(BaseModel):
     product: ProductItem
     user: UserItem
     tailor: TailorListInfo
-    stages: list
+    stages: dict
     created_at: datetime
     customization_code: str = None
     completion_date: datetime | None
