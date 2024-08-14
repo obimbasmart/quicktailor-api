@@ -48,7 +48,7 @@ def register_tailor(req_body: TailorRegIn,
 
     tailor = create_tailor(req_body, db)
     tailor_info = UserInfo(message_key=tailor.message_key, user_id = tailor.id, user_type = 'tailor')
-    message_user_info = send_user_info(user_info)
+    message_user_info = send_user_info(tailor_info)
 
     return JSONResponse(status_code=status.HTTP_201_CREATED,
                         content={"message": "Registeration successfull!"})
@@ -67,7 +67,7 @@ def register_admi(req_body: AdminRegIn,
 
     admin = _create_admin(req_body, db)
     admin_info = UserInfo(message_key=admin.message_key, user_id = admin.id, user_type = 'admin')
-    message_user_info = send_user_info(user_info)
+    message_user_info = send_user_info(admin_info)
 
     return JSONResponse(status_code=status.HTTP_201_CREATED, content={"message": "Registeration successfull!"})
 
