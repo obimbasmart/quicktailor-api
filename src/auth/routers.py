@@ -13,7 +13,8 @@ from .config import settings as auth_settings
 from src.auth.dependencies import get_by_email
 from src.admin.dependencies import get_admin_by_email
 from src.admin.CRUD import _create_admin
-
+from src.messages.dependencies import send_user_info
+from src.messages.schemas import UserInfo
 router = APIRouter(
     prefix="/auth",
     tags=["authentication"],
@@ -31,9 +32,10 @@ def register_user(req_body: UserRegIn,
     # TODO: sync user to message app service - Background task
 
     user = create_user(req_body, db)
+    user_info = UserInfo(message_key=user.message_key, user_id = user.id, user_type = 'user')
+    message_user_info = send_user_info(user_info)
     return JSONResponse(status_code=status.HTTP_201_CREATED,
                         content={"message": "Registeration successfull!"})
-
 
 @router.post("/register/tailor", response_model=BaseResponse)
 def register_tailor(req_body: TailorRegIn,
@@ -45,6 +47,9 @@ def register_tailor(req_body: TailorRegIn,
     # TODO: sync tailor to message app service - Background task
 
     tailor = create_tailor(req_body, db)
+    tailor_info = UserInfo(message_key=tailor.message_key, user_id = tailor.id, user_type = 'tailor')
+    message_user_info = send_user_info(tailor_info)
+
     return JSONResponse(status_code=status.HTTP_201_CREATED,
                         content={"message": "Registeration successfull!"})
 
@@ -61,6 +66,9 @@ def register_admi(req_body: AdminRegIn,
     # TODO: sync tailor to message app service - Background task
 
     admin = _create_admin(req_body, db)
+    admin_info = UserInfo(message_key=admin.message_key, user_id = admin.id, user_type = 'admin')
+    message_user_info = send_user_info(admin_info)
+
     return JSONResponse(status_code=status.HTTP_201_CREATED, content={"message": "Registeration successfull!"})
 
 
