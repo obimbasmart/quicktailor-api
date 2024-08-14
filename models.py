@@ -11,7 +11,7 @@ from sqlalchemy_json import NestedMutableJson
 from enum import Enum as _Enum
 
 from database import Base
-from utils_ import generate_password_hash, check_password_hash
+from utils import generate_password_hash, check_password_hash
 
 
 class BaseModel(Base):

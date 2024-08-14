@@ -4,10 +4,14 @@ from datetime import datetime
 from src.orders.models import OrderStatus
 from src.products.schemas import TailorListInfo
 
-class OrderItem(BaseModel):
-    product_id: str
-    measurements: dict
-    customization_id: str = None
+
+class CreateOrder(BaseModel):
+    reference: str
+    user_id: str
+
+    class Config:
+        extra = 'forbid'
+
 
 class ProductItem(BaseModel):
     name: str
@@ -18,10 +22,12 @@ class PaymentItem(BaseModel):
     created_at: datetime
     amount_paid: float
 
+
 class UserItem(BaseModel):
     username: str
     email: EmailStr
     phone_no: str = None
+
 
 class UserOrderItem(BaseModel):
     id: str

@@ -4,12 +4,12 @@ from src.auth.dependencies import get_current_user
 from src.tailors.CRUD import get_tailors
 from src.tailors.dependencies import get_tailor_by_id, get_current_tailor
 from src.tailors.schemas import TailorItem, TailorListItem, UpdateTailor
-from src.reviews.schemas import ProductReviewItem
+from src.reviews.schemas import ReviewItem
 from dependencies import get_db
 from typing import List
 from pydantic import UUID4
 from fastapi import HTTPException
-from utils_ import verify_resource_access
+from utils import verify_resource_access
 
 
 router = APIRouter(
@@ -33,10 +33,10 @@ def get_single_tailor(tailor_id: UUID4, current_user=Depends(get_current_user),
 
 @router.put('/{tailor_id}', response_model=None)
 def update_tailor(tailor_id: str,
-                       req_body: UpdateTailor,
-                       current_user=Depends(get_current_tailor),
-                       db=Depends(get_db),
-                       tailor=Depends(get_tailor_by_id)):
+                  req_body: UpdateTailor,
+                  current_user=Depends(get_current_tailor),
+                  db=Depends(get_db),
+                  tailor=Depends(get_tailor_by_id)):
 
     if not tailor:
         raise HTTPException(status_code=status.HTTP_404_NOT_FOUND,
@@ -67,7 +67,7 @@ def update_tailor(tailor_id: str,
                         content={"message": "Update successfull"})
 
 
-@router.get('/{tailor_id}/reviews', response_model=List[ProductReviewItem])
+@router.get('/{tailor_id}/reviews', response_model=List[ReviewItem])
 def get_tailor_reviews(tailor_id: UUID4,
                        current_user=Depends(get_current_user),
                        db=Depends(get_db),
