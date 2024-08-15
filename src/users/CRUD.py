@@ -20,12 +20,14 @@ def create_user(user: UserRegIn, db: Session):
     db.refresh(new_user)
     return new_user
 
+
 def get_users(db: Session, filters: dict = None):
     return db.query(User).all()
 
-def update_user(user_id: str,  update_data:UpdateFields, db: Session):
 
-    user = db.query(User).filter(user_id==User.id).one_or_none()
+def update_user(user_id: str,  update_data: UpdateFields, db: Session):
+
+    user = db.query(User).filter(user_id == User.id).one_or_none()
 
     # Update the user fields if they are provided in update_data
     update_fields = update_data.dict(exclude_unset=True)
@@ -39,7 +41,8 @@ def update_user(user_id: str,  update_data:UpdateFields, db: Session):
     # Commit the changes to the database
     db.commit()
     db.refresh(user)
-    return  SUCCESSFUL_UPDATE
+    return SUCCESSFUL_UPDATE
+
 
 def update_measurement(user_id: str, update_data: UpdateFields, db: Session):
     user = db.query(User).filter(User.id == user_id).one_or_none()
@@ -68,7 +71,8 @@ def update_measurement(user_id: str, update_data: UpdateFields, db: Session):
         measurement_tmp.append(measurement)
 
     if not updated:
-        new_measurement = {"measurement_type": measurement_type, **update_fields}
+        new_measurement = {
+            "measurement_type": measurement_type, **update_fields}
         updated_measurement = new_measurement
         user.measurement.append(new_measurement)
     else:
@@ -78,6 +82,7 @@ def update_measurement(user_id: str, update_data: UpdateFields, db: Session):
     db.commit()
     db.refresh(user)
     return updated_measurement
+
 
 def add_favorite(user_id: str, update_data: AddFavorite, db: Session):
     user = db.query(User).filter(User.id == user_id).one_or_none()
@@ -95,7 +100,7 @@ def add_favorite(user_id: str, update_data: AddFavorite, db: Session):
 
                         print("Thise" in "Thiser")
     print(user.favorites, " here are we all time here again ago")
-   
+
    # Commit the changes to the database
     db.commit()
     db.refresh(user)
