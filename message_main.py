@@ -5,13 +5,14 @@ from fastapi.exceptions import RequestValidationError
 from utils import format_validation_errors
 from fastapi.testclient import TestClient
 from message_app.src.messages.routers import router as message_router
-
+from message_app.src.notifications.routers import router as notification_router
 
 def create_message_app():
 
     app = FastAPI()
 
     app.include_router(message_router)
+    app.include_router(notification_router)
 
     Base.metadata.create_all(bind=engine)
 

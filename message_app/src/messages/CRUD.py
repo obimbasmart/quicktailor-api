@@ -65,6 +65,21 @@ def update_message(update_data: UpdateMessage, from_user_id: str, message_id: st
         raise HTTPException(status_code=404, detail="Message not found.")
 
 
+
+def is_viewed(message_id: str, to_user_id, db: Session):
+
+   message = db.query(Message).filter(Message.id == message_id).one_or_none()
+   if message.to_user_id != to_user_id:
+       raise HTTPException(status_code=401, detail="Unauthorized request")
+   if message:
+       message.is_viewed = True
+       db.commit()
+       db.refresh(message)
+       return message
+   else:
+       raise HTTPException(status_code=404, detail="Message not found.")
+
+
 def get_last_messages_list(user_id, db):
     sender = verify_by_id(user_id, db)
 
