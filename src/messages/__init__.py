@@ -87,10 +87,8 @@ async def send_message(sid, data):
         return
     # Verify that the sender_id matches the session ID in connected_users
     if connected_users.get(sender_id) != sid:
-        print(f"User {sender_id} tried to send a message but session ID does not match. Rejecting.")
         await sio.emit("message_error", {"status": "error", "message": "Invalid sender."}, room=sid)
         return
-    
     if not isinstance(message_obj, dict):
         await sio.emit("message_error", {"status": "error", "message": "Invalid message format. Expected an object."}, room=sid)
         return
@@ -102,7 +100,6 @@ async def send_message(sid, data):
         await sio.emit("message_error", {"status": "error", "message": "Invalid message format."}, room=sid)
         return
 
- 
     send_data = jsonable_encoder(message_data)
     SECRET_KEY = os.getenv("SECRET_KEY")
 
@@ -112,19 +109,25 @@ async def send_message(sid, data):
         }
     send_data = message_obj
     response = requests.post(f"http://127.0.0.1:8001/chats/{sender_id}/messages/{reciever_id}", json=send_data, headers=headers)
-    print("This is response ", response.json()) 
-    if 'detail' in response.json():
-         await sio.emit("message_error", {"status": f"{response.json()['detail']}"}, room=sid)
-         return
+    
+    if 'detail' in response.json() or 'errors' in response.json():
+        await sio.emit("message_error", {"status": 'error', "message": (response.json()['detail'] 
+             if 'detail' in response.json() else response.json()['errors'][0]['message'])}, room=sid)
+        return
     # Send an acknowledgment to the sender
     else:
         await sio.emit("message_sent", {"status": "sent"}, room=sid)
         # Ensure the receiver is connected
         if reciever_id in connected_users:
+            new_message = response.json()
+            new_response = requests.patch(f"http://127.0.0.1:8001/chats/{new_message['to_user_id']}/messages/{new_message['id']}", headers=headers)
             reciever_sid = connected_users[reciever_id]
+            data['message'] = new_response.json()
             await sio.emit("receive_message", data, room=reciever_sid)
             await sio.emit("message", {"status": "viewed", 'data':data}, room=sid)
             return
+        #if the reciever is not online emit as not viewed
         else:
+            data['message'] = response.json()
             await sio.emit("message", {"status": "not_viewed", 'data':data}, room=sid)
 

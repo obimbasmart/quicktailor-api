@@ -2,9 +2,9 @@ from fastapi import APIRouter, Depends, HTTPException
 from typing import List
 from message_app.dependencies import get_db
 from message_app.src.messages.schemas import (MessageHistoryResponse, SendMessageData,
-        UserInfo, UpdateMessage, MessageListResponse)
+        UserInfo, UpdateMessage,BaseResponse, MessageListResponse)
 from message_app.src.messages.CRUD import (create_new_message, create_new_user,
-        get_message_history, update_message, get_last_messages_list)
+        get_message_history, update_message, get_last_messages_list, is_viewed)
 from message_app.src.messages.dependencies import verify_secret_key
 router = APIRouter(
     prefix="/chats",
@@ -34,6 +34,13 @@ def send_message(req_body:UpdateMessage, from_user_id:str,  message_id: str,  db
     updated_message = update_message(req_body, from_user_id, message_id, db)
     return updated_message
 
+@router.patch('/{to_user_id}/messages/{message_id}', response_model=MessageHistoryResponse, dependencies=[Depends(verify_secret_key)])
+def send_message(to_user_id:str,  message_id: str,  db=Depends(get_db)):
+    viewed_message = is_viewed( message_id, to_user_id, db)
+    if viewed_message:
+        return viewed_message
+    else:
+        raise HTTPException(status_code="500", detail="an error has occured from the server")
 
 @router.get('/{user_id}/messages', response_model=List[MessageListResponse], dependencies=[Depends(verify_secret_key)])
 def send_message(user_id:str, db = Depends(get_db)):
