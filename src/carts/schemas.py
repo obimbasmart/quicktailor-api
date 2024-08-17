@@ -3,7 +3,7 @@ from typing import List
 from datetime import datetime
 
 
-class AddCart(BaseModel):
+class AddToCart(BaseModel):
     product_id: str
     measurements: dict
 

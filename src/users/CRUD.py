@@ -1,6 +1,6 @@
 from src.auth.schemas import UserRegIn
 from .models import User
-from src.users.schemas import UpdateFields, MeasurementUpdate, AddFavorite
+from src.users.schemas import UpdateUserFields, MeasurementUpdate, AddFavorite, PasswordReset
 from sqlalchemy.orm import Session
 from utils import generate_uuid
 from pydantic import UUID4
@@ -25,26 +25,27 @@ def get_users(db: Session, filters: dict = None):
     return db.query(User).all()
 
 
-def update_user(user_id: str,  update_data: UpdateFields, db: Session):
+def _update_user(current_user: User,  req_body: UpdateUserFields, db: Session):
 
-    user = db.query(User).filter(user_id == User.id).one_or_none()
+    update_data = req_body.model_dump(exclude_unset=True)
 
-    # Update the user fields if they are provided in update_data
-    update_fields = update_data.dict(exclude_unset=True)
-    for key, value in update_fields.items():
-        if value is not None:
-            if key == "password":
-                # Hash the password and store it in password_hash attribute
-                user.set_password(value)
-            else:
-                setattr(user, key, value)
-    # Commit the changes to the database
+    [
+        setattr(current_user, key, value)
+        for key, value in update_data.items()
+    ]
+                
+    db.commit()
+    db.refresh(current_user)
+    return current_user
+
+
+def _update_user_password(user: User, req_body: PasswordReset, db: Session):
+    user.set_password(req_body.password)
     db.commit()
     db.refresh(user)
-    return SUCCESSFUL_UPDATE
+    return user
 
-
-def update_measurement(user_id: str, update_data: UpdateFields, db: Session):
+def update_measurement(user_id: str, update_data: UpdateUserFields, db: Session):
     user = db.query(User).filter(User.id == user_id).one_or_none()
 
     # Update the user fields if they are provided in update_data

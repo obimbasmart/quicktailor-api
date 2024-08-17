@@ -1,6 +1,7 @@
 from database import SessionLocal
 from sqlalchemy.orm import Session
-
+from src.users.models import User
+from src.tailors.models import Tailor
 
 def get_db():
     db: Session = SessionLocal()

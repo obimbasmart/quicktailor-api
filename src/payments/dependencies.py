@@ -77,7 +77,6 @@ async def initiate_payment(req_body: CheckOut,
 
 
 def paystack_initiate_payment(data: InitPayment):
-    print(data.model_dump_json())
     headers = {'Authorization': f'Bearer {settings.TEST_PUBLIC_KEY}'}
     return requests.post(url=settings.BASE_URL.format(suffix='/initialize'),
                          headers=headers, data=data.model_dump_json())

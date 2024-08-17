@@ -4,6 +4,7 @@ from src.auth.dependencies import get_current_user
 from src.tailors.CRUD import get_tailors
 from src.tailors.dependencies import get_tailor_by_id, get_current_tailor
 from src.tailors.schemas import TailorItem, TailorListItem, UpdateTailor
+from src.orders.schemas import TailorOrderListItem
 from src.reviews.schemas import ReviewItem
 from dependencies import get_db
 from typing import List
@@ -91,3 +92,10 @@ def update_verification_details(tailor_id: UUID4,
                             detail={'message': "Unauthorized access"})
 
     return JSONResponse(status_code=200, content=[])
+
+
+@router.get('/{user_id}/orders', response_model=List[TailorOrderListItem])
+def get_tailor_orders(user_id: str,
+                             current_user=Depends(get_current_tailor),
+                             db=Depends(get_db)):
+    return current_user.orders

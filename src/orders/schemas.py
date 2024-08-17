@@ -5,6 +5,56 @@ from src.orders.models import OrderStatus
 from src.products.schemas import TailorListInfo
 
 
+class ProductInfo(BaseModel):
+    id: UUID4
+    name: str
+    price: float
+    images: List = Field(exclude=True, default=[])
+    image_cover_index: int = Field(exclude=True, default=0)
+
+
+    @computed_field
+    @property
+    def image(self) -> str:
+        return self.images[self.image_cover_index | 0]
+
+    class Config:
+        from_attributes = True
+
+class TailorInfo(BaseModel):
+    id: str
+    brand_name: str | None
+    photo: str | None
+    is_available: bool
+
+class OrderListItem(BaseModel):
+    id: str
+    created_at: datetime
+    status: str
+    amount_paid: float
+    product: ProductInfo
+    tailor: TailorInfo | None
+
+    class Config:
+        from_attributes = True
+
+class UserInfo(BaseModel):
+    username: str
+    email: EmailStr
+
+    class Config:
+        from_attributes = True
+
+class TailorOrderListItem(BaseModel):
+    id: str
+    created_at: datetime
+    status: str
+    product: ProductInfo
+    user: UserInfo
+
+    class Config:
+        from_attributes = True
+
 class CreateOrder(BaseModel):
     reference: str
     user_id: str

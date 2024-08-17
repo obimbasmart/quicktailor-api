@@ -1,16 +1,20 @@
-from pydantic import BaseModel, UUID4, Field, computed_field, EmailStr, ConfigDict, field_validator
-from src.auth.schemas import BaseUser
-from typing import Union, List, Optional
-import re
-from .constants import VALID_MEASUREMENT_NAMES
+from pydantic import BaseModel, UUID4, Field, EmailStr, computed_field
+from typing import Optional, List
 from models import Gender
-from src.tailors.schemas import  TailorListItem
+from src.tailors.schemas import TailorListItem
 from src.products.schemas import ProductItem
+from datetime import datetime
+
+
+class PasswordReset(BaseModel):
+    password: str
+    password_2: str
 
 class Location(BaseModel):
     state: str
     city: str
     address: str
+
 
 class SuccessMsg(BaseModel):
     message: str
@@ -18,13 +22,14 @@ class SuccessMsg(BaseModel):
 
 class UserInfo(BaseModel):
     id: str = UUID4
-    username: str 
+    username: str
     email: EmailStr
-    phone: str 
+    phone: str
     gender: str | None
     address: Location | None
     is_online: bool
     email_is_verified: bool
+
 
 class FemaleMeasurementInfo(BaseModel):
     burst: float
@@ -35,6 +40,7 @@ class FemaleMeasurementInfo(BaseModel):
     half_length: float
     round_sleeve: float
     neck: float
+
 
 class MaleMeasurementInfo(BaseModel):
     chest_burst: float
@@ -47,6 +53,7 @@ class MaleMeasurementInfo(BaseModel):
     neck: float
     laps: float
     knee: float
+
 
 class MeasurementUpdate(BaseModel):
     measurement_type: Gender = "MALE"
@@ -65,32 +72,30 @@ class MeasurementUpdate(BaseModel):
     full_length: Optional[float] = None
     half_length: Optional[float] = None
     round_sleeve: Optional[float] = None
-   
+
     class Config:
         json_encoders = {
-        Gender: lambda v: v.value
+            Gender: lambda v: v.value
         }
-        extra='forbid'
+        extra = 'forbid'
 
 
-class UpdateFields(BaseModel):
-    password: str = Field(None, pattern=r'^(?=.*?[A-Z])(?=.*?[a-z])(?=.*?[0-9])(?=.*?[#?!@$%^&*-]).{8,}$')
+class UpdateUserFields(BaseModel):
     username: str = Field(None, pattern=r'^[A-Za-z][A-Za-z0-9_]{3,20}$')
-    email: str = None
     phone: str = Field(None, max_length=11)
     gender: Gender | None = None
     address: Optional[Location] = None
 
     class Config:
-        extra='forbid'
-        regex_engine='python-re'
+        extra = 'forbid'
+        regex_engine = 'python-re'
 
 
 class FavoriteResponse(BaseModel):
     tailors: list[TailorListItem]
     products: list[ProductItem]
 
+
 class AddFavorite(BaseModel):
     tailor_id: Optional[str] = None
-    product_id: Optional[str] =  None
-
+    product_id: Optional[str] = None
