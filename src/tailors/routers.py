@@ -1,16 +1,18 @@
-from fastapi import APIRouter, Depends, status
+from fastapi import APIRouter, Depends
 from fastapi.responses import JSONResponse
 from src.auth.dependencies import get_current_user
-from src.tailors.CRUD import get_tailors
+from src.tailors.CRUD import get_tailors, _update_tailor
 from src.tailors.dependencies import get_tailor_by_id, get_current_tailor
+from src.orders.dependencies import get_order_by_id
 from src.tailors.schemas import TailorItem, TailorListItem, UpdateTailor
-from src.orders.schemas import TailorOrderListItem
+from src.orders.schemas import TailorOrderListItem, TailorOrderItem
 from src.reviews.schemas import ReviewItem
 from dependencies import get_db
 from typing import List
 from pydantic import UUID4
-from fastapi import HTTPException
 from utils import verify_resource_access
+from responses import update_success_response
+from exceptions import unauthorized_access_exception
 
 
 router = APIRouter(
@@ -27,8 +29,9 @@ def get_all_tailors(current_user=Depends(get_current_user),
 
 
 @router.get('/{tailor_id}', response_model=TailorItem)
-def get_single_tailor(tailor_id: UUID4, current_user=Depends(get_current_user),
-                      db=Depends(get_db), tailor=Depends(get_tailor_by_id)):
+def get_single_tailor(tailor_id: UUID4,
+                      current_user=Depends(get_current_user),
+                      tailor=Depends(get_tailor_by_id)):
     return tailor
 
 
@@ -39,63 +42,47 @@ def update_tailor(tailor_id: str,
                   db=Depends(get_db),
                   tailor=Depends(get_tailor_by_id)):
 
-    if not tailor:
-        raise HTTPException(status_code=status.HTTP_404_NOT_FOUND,
-                            detail='Tailor not found')
-
     verify_resource_access(tailor_id, current_user.id)
-
-    update_data = req_body.model_dump(exclude_unset=True)
-
-    [
-        setattr(tailor, attr, value)
-        for attr, value in update_data.items()
-        if attr not in ['first_name', 'last_name']
-    ]
-
-    if not tailor.nin_is_verified:
-        [
-            setattr(tailor, attr, value)
-            for attr, value in update_data.items()
-            if attr in ['first_name', 'last_name']
-        ]
-
-    tailor.check_and_activate(db)
-
-    db.commit()
-    db.refresh(tailor)
-    return JSONResponse(status_code=status.HTTP_200_OK,
-                        content={"message": "Update successfull"})
+    tailor = _update_tailor(tailor, req_body, db)
+    return update_success_response("Tailor")
 
 
 @router.get('/{tailor_id}/reviews', response_model=List[ReviewItem])
 def get_tailor_reviews(tailor_id: UUID4,
                        current_user=Depends(get_current_user),
-                       db=Depends(get_db),
                        tailor=Depends(get_tailor_by_id)):
 
-    if not tailor:
-        raise HTTPException(status_code=status.HTTP_404_NOT_FOUND,
-                            detail='Tailor not found')
-
-    return JSONResponse(status_code=200, content=[])
+    return tailor.reviews
 
 
-@router.get('/{tailor_id}/verification')
+@router.post('/{tailor_id}/verification')
 def update_verification_details(tailor_id: UUID4,
                                 current_user=Depends(get_current_tailor),
                                 db=Depends(get_db),
                                 tailor=Depends(get_tailor_by_id)):
 
-    if tailor.id != current_user.id:
-        raise HTTPException(status.HTTP_401_UNAUTHORIZED,
-                            detail={'message': "Unauthorized access"})
+    verify_resource_access(tailor.id, current_user.id)
 
     return JSONResponse(status_code=200, content=[])
 
 
-@router.get('/{user_id}/orders', response_model=List[TailorOrderListItem])
-def get_tailor_orders(user_id: str,
-                             current_user=Depends(get_current_tailor),
-                             db=Depends(get_db)):
+@router.get('/{tailor_id}/orders', response_model=List[TailorOrderListItem])
+def get_tailor_orders(tailor_id: str,
+                      current_user=Depends(get_current_tailor),
+                      tailor=Depends(get_tailor_by_id)):
+    verify_resource_access(tailor.id, current_user.id)
     return current_user.orders
+
+
+@router.get('/{tailor_id}/orders/{order_id}', response_model=TailorOrderItem)
+def get_tailor_orders(tailor_id: str,
+                      order_id: str,
+                      current_user=Depends(get_current_tailor),
+                      tailor=Depends(get_tailor_by_id),
+                      order=Depends(get_order_by_id)):
+    verify_resource_access(tailor.id, current_user.id)
+
+    if order.id not in [item.id for item in tailor.orders]:
+        raise unauthorized_access_exception()
+    
+    return order

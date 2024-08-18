@@ -13,8 +13,9 @@ def create_new_review(user: User, order: Order, req_body: UploadReview, db: Sess
         raise already_exists_exception('Review')
 
 
-    new_review = Review(**req_body.model_dump(),
+    new_review = Review(**req_body.model_dump(exclude_unset=True),
                         user_id = user.id,
+                        tailor_id = order.tailor.id,
                         order_id = order.id)
     
     db.add(new_review)

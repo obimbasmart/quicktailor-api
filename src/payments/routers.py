@@ -35,7 +35,8 @@ async def paystack_webhook(request: Request,
 
 @router.post("/checkout")
 async def checkout(req_body: CheckOut,
-                   current_user=Depends(get_current_user),
-                   payload=Depends(initiate_payment)):
+                   db=Depends(get_db),
+                   current_user=Depends(get_current_user)):
 
+    payload = initiate_payment(current_user, req_body, db)
     return payload

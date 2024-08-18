@@ -26,6 +26,7 @@ class Tailor(BaseUser):
 
     products = relationship('Product', back_populates="tailor")
     orders = relationship("Order", back_populates="tailor")
+    reviews = relationship("Review", backref="tailor", cascade="all, delete-orphan")
 
     def check_and_activate(self, db: Session):
         if all([

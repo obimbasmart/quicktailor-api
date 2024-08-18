@@ -113,3 +113,7 @@ class UserOrderItem(BaseModel):
     @property
     def completion_date(self) -> datetime:
         return self.created_at + timedelta(self.product.estimated_tc)
+    
+class TailorOrderItem(UserOrderItem):
+    measurement: Dict
+    amount_paid: float

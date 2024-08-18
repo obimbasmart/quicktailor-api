@@ -7,7 +7,6 @@ class PaystackWebhookPayload(BaseModel):
 
 class CheckOut(BaseModel):
     cart: List[str]
-    user_id: str
 
     class Config:
         extra = 'forbid'

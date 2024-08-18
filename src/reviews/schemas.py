@@ -19,17 +19,26 @@ class UploadReview(BaseModel):
     product_as_described: int | None = None
     recommend_to_friend: int | None = None
 
+class ProductReviewItem(BaseModel):
+    id: str
+    name: str
+
+class OrderReviewItem(BaseModel):
+    product: ProductReviewItem
+    amount_paid: float
+
+class UserReviewItem(BaseModel):
+    username: str
 
 class ReviewItem(BaseModel):
     id: UUID
     text: str
     seller_communication_level: int | None = None
     product_quality: int  = None
-    product_as_described: int = None
-    recommend_to_friend: int = None
-    
-    user: object = Field(exclude=True)
-    order: object = Field(exclude=True)
+    product_as_described: int | None = None
+    recommend_to_friend: int | None = None
+    order: OrderReviewItem = Field(exclude=True)
+    user: UserReviewItem = Field(exclude=True)
     created_at: datetime
 
     @computed_field
@@ -40,7 +49,12 @@ class ReviewItem(BaseModel):
     @computed_field
     @property
     def product(self) -> Dict:
-        return ProductReviewItem.model_validate().model_dump()
+        return self.order.product
+    
+    @computed_field
+    @property
+    def amount_paid(self) -> float:
+        return self.order.amount_paid
     
 
 

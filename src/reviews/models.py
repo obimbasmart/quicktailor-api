@@ -16,6 +16,7 @@ class Review(BaseModel):
     __tablename__ = "reviews"
     order_id = Column(String(60), ForeignKey('orders.id'), nullable=False)
     user_id = Column(String(60), ForeignKey('users.id'),  nullable=False)
+    tailor_id = Column(String(60), ForeignKey('tailors.id'),  nullable=False)
     text = Column(Text, nullable=False)
     seller_communication_level = Column(Enum(Rating), nullable=True)
     product_quality = Column(Enum(Rating), nullable=True)

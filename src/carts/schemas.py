@@ -1,12 +1,12 @@
 from pydantic import BaseModel, UUID4, computed_field, Field, EmailStr
 from typing import List, Dict
 from datetime import datetime
-from src.users.schemas import MeasurementItem
+from src.users.schemas import MeasurementItem, MaleMeasurement, FemaleMeasurement
 
 
 class AddToCart(BaseModel):
     product_id: str
-    measurements: MeasurementItem
+    measurements: FemaleMeasurement | MaleMeasurement
 
 class RemoveCart(BaseModel):
     cart_id: str
