@@ -1,40 +1,52 @@
 from sqlalchemy.orm import Session
 from fastapi import HTTPException, status
-from uuid import UUID
-from typing import List
-from src.carts.models import Cart
+from src.carts.models import CartItem
 from src.carts.schemas import AddToCart
-from src.products.CRUD import _get_product
+from src.products.CRUD import get_product_by_id
+from src.users.models import User
+from exceptions import not_found_exception
+from typing import List
 
 
-def add_to_cart(req_body: AddToCart, user_id: str, db: Session):
-    product = _get_product(req_body.product_id, db=db)
+def add_to_cart(user: User, req_body: AddToCart,  db: Session):
+    product = get_product_by_id(req_body.product_id, db=db)
 
-    if not product:
-        raise HTTPException(status_code=status.HTTP_404_NOT_FOUND,
-                            detail="Product Not found")
-
-    new_cart_item = Cart(user_id=user_id,
-                         measurement=req_body.measurements,
-                         product_id=product.id)
+    new_cart_item = CartItem(user_id=user.id,
+                             measurements=req_body.measurements.model_dump(),
+                             product_id=product.id)
 
     db.add(new_cart_item)
     db.commit()
     db.refresh(new_cart_item)
     return new_cart_item
 
-
-def get_cart(id: str, db: Session) -> Cart:
-    cart = db.query(Cart).filter(id == Cart.id).one_or_none()
+def get_cart_item(id: str, db: Session) -> CartItem:
+    cart = db.query(CartItem).filter(id == CartItem.id).one_or_none()
     if not cart:
-        raise HTTPException(
-            status_code=status.HTTP_404_NOT_FOUND, detail="Cart Not found")
+        raise not_found_exception('Cart item')
     return cart
 
 
-def remove_cart(cart_id: str, db: Session):
+def delete_cart_item(cart_id: str, user: User, db: Session):
 
-    cart = db.query(Cart).filter(Cart.id == cart_id).one_or_none()
-    db.delete(cart)
+    cart_item = get_cart_item(cart_id, db)
+
+    in_cart = cart_item.id in [item.id for item in user.cart]
+
+    if not in_cart:
+        raise not_found_exception('Cart item')
+    
+    db.delete(cart_item)
+    db.commit()
+    return True
+
+def clear_items_in_cart(cart: List[str], db: Session):
+    cart_items = [get_cart_item(item, db) for item in cart]
+    
+    [
+        db.delete(item)
+        for item in cart_items
+    ]
+
     db.commit()
     return True

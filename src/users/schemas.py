@@ -31,7 +31,8 @@ class UserInfo(BaseModel):
     email_is_verified: bool
 
 
-class FemaleMeasurementInfo(BaseModel):
+
+class FemaleMeasurement(BaseModel):
     burst: float
     waist: float
     hips: float
@@ -42,7 +43,7 @@ class FemaleMeasurementInfo(BaseModel):
     neck: float
 
 
-class MaleMeasurementInfo(BaseModel):
+class MaleMeasurement(BaseModel):
     chest_burst: float
     stomach: float
     top_length: float
@@ -55,29 +56,15 @@ class MaleMeasurementInfo(BaseModel):
     knee: float
 
 
-class MeasurementUpdate(BaseModel):
-    measurement_type: Gender = "MALE"
-    shoulder: Optional[float] = None
-    waist: Optional[float] = None
-    neck: Optional[float] = None
-    chest_burst: Optional[float] = None
-    stomach: Optional[float] = None
-    top_length: Optional[float] = None
-    sleeve_length: Optional[float] = None
-    muscle: Optional[float] = None
-    laps: Optional[float] = None
-    hips: Optional[float] = None
-    knee: Optional[float] = None
-    burst: Optional[float] = None
-    full_length: Optional[float] = None
-    half_length: Optional[float] = None
-    round_sleeve: Optional[float] = None
+class MeasurementItem(BaseModel):
+    male: MaleMeasurement
+    female: FemaleMeasurement
 
-    class Config:
-        json_encoders = {
-            Gender: lambda v: v.value
-        }
-        extra = 'forbid'
+
+class MeasurementUpdate(MeasurementItem):
+    male: Optional[MaleMeasurement] = None
+    female: Optional[FemaleMeasurement] = None
+    
 
 
 class UpdateUserFields(BaseModel):
@@ -91,7 +78,7 @@ class UpdateUserFields(BaseModel):
         regex_engine = 'python-re'
 
 
-class FavoriteResponse(BaseModel):
+class Favorites(BaseModel):
     tailors: list[TailorListItem]
     products: list[ProductItem]
 

@@ -5,6 +5,7 @@ MEASUREMENTS = {
         "top_length": 0.0,
         "stomach": 0.0,
         "shoulder": 0.0,
+        "muscle": 0.0,
         "neck": 0.0,
         "waist": 0.0,
         "laps": 0.0,

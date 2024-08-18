@@ -3,7 +3,7 @@ from src.tailors.dependencies import get_current_tailor
 from src.auth.dependencies import get_current_user
 from src.products.schemas import ProductUpload, ProductUpdate, ProductListItem, ProductItem, ProductTailorItem, CreateCustomCode
 from src.auth.schemas import BaseResponse
-from src.products.CRUD import _get_products, _create_product, _get_product, _update_product, _delete_product, _create_custom_code
+from src.products.CRUD import get_product_by_ids, _create_product, get_product_by_id, _update_product, _delete_product, _create_custom_code
 from dependencies import get_db
 from typing import List
 from fastapi.responses import JSONResponse
@@ -26,7 +26,7 @@ def create_product(req_body: ProductUpload,
 @router.get('', response_model=List[ProductListItem])
 def get_products(current_user=Depends(get_current_user),
                  db=Depends(get_db)):
-    products = _get_products(db)
+    products = get_product_by_ids(db)
     return products
 
 
@@ -34,7 +34,7 @@ def get_products(current_user=Depends(get_current_user),
 def get_product(product_id: str,
                 current_user=Depends(get_current_user),
                 db=Depends(get_db)):
-    products = _get_product(product_id, db)
+    products = get_product_by_id(product_id, db)
     return products
 
 
@@ -59,7 +59,7 @@ def delete_product(product_id: str,
 def get_product_tailor_info(product_id: str,
                             current_user=Depends(get_current_user),
                             db=Depends(get_db)):
-    product = _get_product(product_id, db)
+    product = get_product_by_id(product_id, db)
     return product.tailor
 
 
@@ -68,7 +68,7 @@ def get_product_tailor_info(product_id: str,
 def get_product_reviews(product_id: str,
                         current_user=Depends(get_current_user),
                         db=Depends(get_db)):
-    product = _get_product(product_id, db)
+    product = get_product_by_id(product_id, db)
     # return product.reviews
     return {"message": "This is it sucess"}
 

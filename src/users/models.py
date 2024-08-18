@@ -8,8 +8,8 @@ from sqlalchemy.orm import relationship
 class User(BaseUser):
     __tablename__ = "users"
     username = Column(String(60), nullable=False)
-    measurement = Column(NestedMutableJson, default=MEASUREMENTS)
+    measurements = Column(NestedMutableJson, default=MEASUREMENTS)
     favorites = Column(NestedMutableJson, default=FAVORITES)
-    carts = relationship('Cart', back_populates='user')
+    cart = relationship('CartItem', back_populates='user')
     orders = relationship('Order', back_populates='user')
     reviews = relationship('Review', back_populates='user')

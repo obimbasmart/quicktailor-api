@@ -4,7 +4,12 @@ from src.users.schemas import UpdateUserFields, MeasurementUpdate, AddFavorite, 
 from sqlalchemy.orm import Session
 from utils import generate_uuid
 from pydantic import UUID4
+from src.tailors.dependencies import get_tailor_by_id
+from src.products.CRUD import get_product_by_id
+
 from src.users.constants import SUCCESSFUL_UPDATE
+from fastapi import HTTPException
+from exceptions import not_found_exception
 
 
 def create_user(user: UserRegIn, db: Session):
@@ -33,7 +38,7 @@ def _update_user(current_user: User,  req_body: UpdateUserFields, db: Session):
         setattr(current_user, key, value)
         for key, value in update_data.items()
     ]
-                
+
     db.commit()
     db.refresh(current_user)
     return current_user
@@ -45,64 +50,38 @@ def _update_user_password(user: User, req_body: PasswordReset, db: Session):
     db.refresh(user)
     return user
 
-def update_measurement(user_id: str, update_data: UpdateUserFields, db: Session):
-    user = db.query(User).filter(User.id == user_id).one_or_none()
 
-    # Update the user fields if they are provided in update_data
-    update_fields = update_data.dict(exclude_unset=True)
-    measurement_type = update_fields.get("measurement_type")
-    measurement_tmp = []
-    updated_measurement = None
+def update_measurements(user: User,
+                        update_data: UpdateUserFields,
+                        db: Session):
 
-    if 'measurement_type' in update_fields:
-        # Convert the Enum to its string value
-        measurement_type = measurement_type.value
-        update_fields['measurement_type'] = measurement_type
+    update_data = update_data.model_dump(exclude_unset=True)
+    user.measurements.update(update_data)
 
-    updated = False
-
-    # Check and update the measurements
-    for measurement in user.measurement:
-        if measurement.get("measurement_type") == measurement_type:
-            for k, v in update_fields.items():
-                if v is not None:
-                    measurement[k] = v
-            updated = True
-            updated_measurement = measurement
-        measurement_tmp.append(measurement)
-
-    if not updated:
-        new_measurement = {
-            "measurement_type": measurement_type, **update_fields}
-        updated_measurement = new_measurement
-        user.measurement.append(new_measurement)
-    else:
-        user.measurement = [m for m in measurement_tmp]
-
-    # Commit the changes to the database
     db.commit()
     db.refresh(user)
-    return updated_measurement
+    return user
 
 
-def add_favorite(user_id: str, update_data: AddFavorite, db: Session):
-    user = db.query(User).filter(User.id == user_id).one_or_none()
+def add_to_favorites(user: User, req_body: AddFavorite, db: Session):
 
-    update_fields = update_data.dict(exclude_unset=True)
-    tmp_favorites = user.favorites.copy()
-    for k, v in tmp_favorites.items():
-        for key, value in update_fields.items():
-            if value != None:
-                if key[:5] in k:
-                    if value not in v:
-                        user.favorites[k].append(value)
-                    else:
-                        user.favorites[k].remove(value)
+    update_data = req_body.model_dump(exclude_defaults=True)
 
-                        print("Thise" in "Thiser")
-    print(user.favorites, " here are we all time here again ago")
+    if update_data.get('tailor_id'):
+        tailor = get_tailor_by_id(update_data.get('tailor_id'), db)
+        user.favorites['tailors'] = toggle_item_in_list(tailor.id, user.favorites['tailors'])
+    
+    if update_data.get('product_id'):
+        product = get_product_by_id(update_data.get('product_id'), db)
+        user.favorites['products'] = toggle_item_in_list(product.id, user.favorites['products'])
 
-   # Commit the changes to the database
     db.commit()
     db.refresh(user)
-    return SUCCESSFUL_UPDATE
+    return True
+
+
+def toggle_item_in_list(item: str, items: list):
+    items.remove(item) \
+        if item in items \
+            else items.append(item)
+    return items

@@ -4,6 +4,8 @@ from uuid import UUID
 from src.users.models import User
 from src.orders.models import Order
 from datetime import datetime
+from src.reviews.models import Rating
+
 
 class ProductReviewItem(BaseModel):
     id: UUID
@@ -12,16 +14,16 @@ class ProductReviewItem(BaseModel):
 
 class UploadReview(BaseModel):
     text: str
-    seller_communication_level: int  = None
-    product_quality: int  = None
-    product_as_described: int = None
-    recommend_to_friend: int = None
+    product_quality: Rating
+    seller_communication_level: int | None = None
+    product_as_described: int | None = None
+    recommend_to_friend: int | None = None
 
 
 class ReviewItem(BaseModel):
     id: UUID
     text: str
-    seller_communication_level: int  = None
+    seller_communication_level: int | None = None
     product_quality: int  = None
     product_as_described: int = None
     recommend_to_friend: int = None
