@@ -6,6 +6,7 @@ from sqlalchemy.orm import Session
 from fastapi import File
 from utils import generate_uuid
 from exceptions import bad_request_exception
+from src.storage.aws_s3_storage import s3_client
 
 
 def create_tailor(tailor: TailorRegIn, db: Session):
@@ -83,7 +84,10 @@ def _upload_verification_photo(tailor: Tailor,
     details = db.query(Verification).filter(
         Verification.tailor_id == tailor.id).one_or_none()
 
-    # TODO: upload photo to s3 client, return url save to database
+    if details:
+        key_name = s3_client.upload_file(photo, tailor.id, "verfication-photos")
+        details.photo = key_name
+        # TODO: upload photo to s3 client, return url save to database
 
 
     db.commit()

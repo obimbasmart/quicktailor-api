@@ -1,7 +1,7 @@
 from fastapi import APIRouter, Depends, File, UploadFile, Form
 from fastapi.responses import JSONResponse
 from src.auth.dependencies import get_current_user
-from src.tailors.CRUD import get_tailors, _update_tailor, _upload_verification_details
+from src.tailors.CRUD import get_tailors, _update_tailor, _upload_verification_details, _upload_verification_photo
 from src.tailors.dependencies import get_tailor_by_id, get_current_tailor
 from src.orders.dependencies import get_order_by_id
 from src.tailors.schemas import TailorItem, TailorListItem, UpdateTailor, VerificationInfo
@@ -55,18 +55,6 @@ def get_tailor_reviews(tailor_id: UUID4,
     return tailor.reviews
 
 
-@router.post('/{tailor_id}/verification')
-def upload_verification_details(tailor_id: UUID4,
-                                details: VerificationInfo,
-                                current_user=Depends(get_current_tailor),
-                                db=Depends(get_db),
-                                tailor=Depends(get_tailor_by_id)):
-
-    verify_resource_access(tailor.id, current_user.id)
-    tailor = _upload_verification_details(tailor, details, db)
-    return update_success_response('Verification details')
-
-
 @router.get('/{tailor_id}/orders', response_model=List[TailorOrderListItem])
 def get_tailor_orders(tailor_id: str,
                       current_user=Depends(get_current_tailor),
@@ -87,3 +75,27 @@ def get_tailor_orders(tailor_id: str,
         raise unauthorized_access_exception()
 
     return order
+
+
+@router.post('/{tailor_id}/verification')
+def upload_verification_details(tailor_id: UUID4,
+                                details: VerificationInfo,
+                                current_user=Depends(get_current_tailor),
+                                db=Depends(get_db),
+                                tailor=Depends(get_tailor_by_id)):
+
+    verify_resource_access(tailor.id, current_user.id)
+    tailor = _upload_verification_details(tailor, details, db)
+    return update_success_response('Verification details')
+
+
+@router.post('/{tailor_id}/verification-photo')
+def upload_verification_photo(tailor_id: UUID4,
+                              photo: UploadFile,
+                              current_user=Depends(get_current_tailor),
+                              db=Depends(get_db),
+                              tailor=Depends(get_tailor_by_id)):
+
+    verify_resource_access(tailor.id, current_user.id)
+    tailor = _upload_verification_photo(tailor, photo, db)
+    return update_success_response('Verification details')
