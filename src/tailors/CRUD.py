@@ -1,9 +1,11 @@
 
 from src.auth.schemas import TailorRegIn
-from src.tailors.schemas import UpdateTailor
-from .models import Tailor
+from src.tailors.schemas import UpdateTailor, VerificationInfo
+from .models import Tailor, Verification
 from sqlalchemy.orm import Session
+from fastapi import File
 from utils import generate_uuid
+from exceptions import bad_request_exception
 
 
 def create_tailor(tailor: TailorRegIn, db: Session):
@@ -45,3 +47,61 @@ def _update_tailor(tailor: Tailor, req_body: UpdateTailor, db: Session):
     db.commit()
     db.refresh(tailor)
     return tailor
+
+
+def _upload_verification_details(tailor: Tailor,
+                                 details: VerificationInfo,
+                                 db: Session):
+
+    if tailor.nin_is_verified:
+        raise bad_request_exception('NIN is already verfied for this tailor')
+
+    verification_item = db.query(Verification).filter(
+        Verification.tailor_id == tailor.id).one_or_none()
+
+    if verification_item:
+        tailor_details = _update_verification_details(verification_item, details, db)
+    else:
+        tailor_details = Verification(**details.model_dump(), tailor_id=tailor.id)
+        db.add(tailor_details)
+
+    # TODO: run api verifcation background task and save info to db
+    # ..........
+
+    db.commit()
+    db.refresh(tailor_details)
+    return tailor_details
+
+
+def _upload_verification_photo(tailor: Tailor,
+                               photo: File,
+                               db: Session):
+
+    if tailor.nin_is_verified:
+        raise bad_request_exception('NIN is already verfied for this tailor')
+
+    details = db.query(Verification).filter(
+        Verification.tailor_id == tailor.id).one_or_none()
+
+    # TODO: upload photo to s3 client, return url save to database
+
+
+    db.commit()
+    db.refresh(details)
+    return details
+
+
+def _update_verification_details(verification_item: Verification,
+                                 req_body: VerificationInfo,
+                                 db: Session):
+
+    update_data = req_body.model_dump()
+
+    print(update_data)
+
+    [
+        setattr(verification_item, attr, val)
+        for attr, val in update_data.items()
+    ]
+
+    return verification_item

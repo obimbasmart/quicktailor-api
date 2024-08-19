@@ -1,10 +1,10 @@
-from fastapi import APIRouter, Depends
+from fastapi import APIRouter, Depends, File, UploadFile, Form
 from fastapi.responses import JSONResponse
 from src.auth.dependencies import get_current_user
-from src.tailors.CRUD import get_tailors, _update_tailor
+from src.tailors.CRUD import get_tailors, _update_tailor, _upload_verification_details
 from src.tailors.dependencies import get_tailor_by_id, get_current_tailor
 from src.orders.dependencies import get_order_by_id
-from src.tailors.schemas import TailorItem, TailorListItem, UpdateTailor
+from src.tailors.schemas import TailorItem, TailorListItem, UpdateTailor, VerificationInfo
 from src.orders.schemas import TailorOrderListItem, TailorOrderItem
 from src.reviews.schemas import ReviewItem
 from dependencies import get_db
@@ -56,14 +56,15 @@ def get_tailor_reviews(tailor_id: UUID4,
 
 
 @router.post('/{tailor_id}/verification')
-def update_verification_details(tailor_id: UUID4,
+def upload_verification_details(tailor_id: UUID4,
+                                details: VerificationInfo,
                                 current_user=Depends(get_current_tailor),
                                 db=Depends(get_db),
                                 tailor=Depends(get_tailor_by_id)):
 
     verify_resource_access(tailor.id, current_user.id)
-
-    return JSONResponse(status_code=200, content=[])
+    tailor = _upload_verification_details(tailor, details, db)
+    return update_success_response('Verification details')
 
 
 @router.get('/{tailor_id}/orders', response_model=List[TailorOrderListItem])
@@ -84,5 +85,5 @@ def get_tailor_orders(tailor_id: str,
 
     if order.id not in [item.id for item in tailor.orders]:
         raise unauthorized_access_exception()
-    
+
     return order
