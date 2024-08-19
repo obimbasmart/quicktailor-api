@@ -1,15 +1,13 @@
 from src.products.schemas import ProductUpload, CreateCustomCode
 from sqlalchemy.orm import Session
 from src.products.models.product import Product
-from fastapi import HTTPException, status
 from uuid import UUID
 from typing import List
 from src.products.models.product import Fabric, Category
 from src.products.models.customization import Customization
 from src.tailors.models import Tailor
 from src.users.models import User
-from exceptions import not_found_exception, access_denied_exception
-
+from exceptions import not_found_exception, access_denied_exception, bad_request_exception
 
 def _create_product(product_data: ProductUpload, id: UUID, db: Session) -> Product:
     new_product = Product(**product_data.model_dump(exclude=["categories", "fabrics"]),
@@ -43,8 +41,12 @@ def _delete_product(id: str, tailor: Tailor, db: Session):
     if product.id not in [product.id for product in tailor.products]:
         raise access_denied_exception()
 
-    db.delete(product)
-    db.commit()
+    try:
+        db.delete(product)
+        db.commit()
+    except:
+        raise bad_request_exception('Cannot delete: The product has dependent orders')
+    
     return True
 
 

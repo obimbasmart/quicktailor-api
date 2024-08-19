@@ -25,3 +25,4 @@ class Review(BaseModel):
 
     user = relationship('User', back_populates="reviews")
     order = relationship('Order', back_populates="review")
+    product = relationship('Product', secondary='orders', viewonly=True, back_populates='reviews')

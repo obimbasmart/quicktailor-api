@@ -3,10 +3,12 @@ from src.tailors.dependencies import get_current_tailor
 from src.auth.dependencies import get_current_user
 from src.products.schemas import ProductUpload, ProductUpdate, ProductListItem, ProductItem, ProductTailorItem, CreateCustomCode
 from src.auth.schemas import BaseResponse
+from src.reviews.schemas import ReviewItem
 from src.products.CRUD import get_product_by_ids, _create_product, get_product_by_id, _update_product, _delete_product, _create_custom_code
 from dependencies import get_db
 from typing import List
 from fastapi.responses import JSONResponse
+from responses import delete_success_response, create_success_response, update_success_response
 
 
 router = APIRouter(
@@ -20,7 +22,7 @@ def create_product(req_body: ProductUpload,
                    tailor=Depends(get_current_tailor),
                    db=Depends(get_db)):
     new_product = _create_product(req_body, tailor.id, db)
-    return JSONResponse(status_code=201, content={'message': 'success', "id": new_product.id})
+    return create_success_response("Product", data={'id': new_product.id})
 
 
 @router.get('', response_model=List[ProductListItem])
@@ -39,12 +41,12 @@ def get_product(product_id: str,
 
 
 @router.put('/{product_id}', response_model=BaseResponse)
-def delete_product(product_id: str,
+def update_product(product_id: str,
                    req_body: ProductUpdate,
                    tailor=Depends(get_current_tailor),
                    db=Depends(get_db)):
     product = _update_product(product_id, req_body, db)
-    return {"message": "Update successfull"}
+    return update_success_response('Product')
 
 
 @router.delete('/{product_id}', response_model=BaseResponse)
@@ -52,8 +54,7 @@ def delete_product(product_id: str,
                    tailor=Depends(get_current_tailor),
                    db=Depends(get_db)):
     product = _delete_product(product_id, tailor, db)
-    return {"message": "Product deleted successfully"}
-
+    return delete_success_response('Product')
 
 @router.get('/{product_id}/tailor', response_model=ProductTailorItem)
 def get_product_tailor_info(product_id: str,
@@ -63,14 +64,12 @@ def get_product_tailor_info(product_id: str,
     return product.tailor
 
 
-# TODO: Complete
-@router.get('/{product_id}/reviews', response_model=None)
+@router.get('/{product_id}/reviews', response_model=List[ReviewItem])
 def get_product_reviews(product_id: str,
                         current_user=Depends(get_current_user),
                         db=Depends(get_db)):
     product = get_product_by_id(product_id, db)
-    # return product.reviews
-    return {"message": "This is it sucess"}
+    return product.reviews
 
 
 @router.post('/{product_id}/customization-code', response_model=None)

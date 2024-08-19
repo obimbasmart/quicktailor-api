@@ -28,3 +28,9 @@ def already_exists_exception(resource_name: str = "Resource"):
         detail=f"{resource_name} already exists."
     )
 
+
+def bad_request_exception(msg: str = "Bad request"):
+    return HTTPException(
+        status_code=status.HTTP_400_BAD_REQUEST,
+        detail=f"{msg}."
+    )
