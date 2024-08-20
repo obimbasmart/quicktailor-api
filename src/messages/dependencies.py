@@ -1,29 +1,28 @@
-from fastapi import APIRouter, Depends, status
-from fastapi.responses import JSONResponse
+from fastapi import Depends
 from src.auth.dependencies import get_current_user
-from src.tailors.CRUD import get_tailors
-from src.tailors.dependencies import get_tailor_by_id, get_current_tailor
 from dependencies import get_db
-from typing import List
-from pydantic import UUID4
-from fastapi import HTTPException
-from src.messages.schemas import MessageHistoryResponse, SendMessageData, UserInfo
+from src.messages.schemas import UserMessageData
 import os
 import requests
+from config import get_settings
+
+settings = get_settings()
+
+headers = {
+    "x-secret-key": f"{settings.SECRET_KEY}",
+    "Content-Type": "application/json"
+}
 
 
-def send_user_info(req_body:UserInfo, db=Depends(get_db),
-        current_user = Depends(get_current_user)):
-
-    SECRET_KEY = os.getenv("SECRET_KEY")
-
-    headers = {
-        "x-secret-key": f"{SECRET_KEY}",
-        "Content-Type": "application/json"
-        }
-    send_data = req_body.dict()
-    send_data['user_type'] = send_data['user_type'].value
-    response = requests.post("http://127.0.0.1:8001/chats", json=send_data, headers=headers)
-    print("this is the response from the app", response.json())
+def send_user_data_to_message_system(user_data: UserMessageData):
+    data = user_data.model_dump()
+    print(data)
+    response = requests.post(
+        "http://127.0.0.1:8001/chats", json=data, headers=headers)
     return response.json()
 
+
+def get_user_msg_data(user):
+    return UserMessageData(message_key=user.message_key,
+                           user_id=user.id,
+                           user_type=type(user).__name__.lower())

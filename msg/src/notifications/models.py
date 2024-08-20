@@ -1,6 +1,6 @@
 from sqlalchemy import String, Boolean, Text
 from sqlalchemy.orm import Mapped, mapped_column
-from message_app.models import BaseModel
+from msg.models import BaseModel
 
 
 class Notification(BaseModel):
@@ -11,4 +11,3 @@ class Notification(BaseModel):
     content: Mapped[str] = mapped_column(Text, nullable=False)
     is_clicked: Mapped[bool] = mapped_column(Boolean, default=False)
     notification_type: Mapped[str] = mapped_column(String(60), nullable=False)
-

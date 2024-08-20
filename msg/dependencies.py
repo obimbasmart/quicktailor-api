@@ -1,4 +1,4 @@
-from message_app.database import SessionLocal
+from msg.database import SessionLocal
 from sqlalchemy.orm import Session
 
 

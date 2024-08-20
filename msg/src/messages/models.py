@@ -1,25 +1,31 @@
-from sqlalchemy import (String, Column, func,  Boolean, Text, Enum, 
-        JSON, ForeignKey, case)
+from sqlalchemy import (String, Column, func,  Boolean, Text, Enum,
+                        JSON, ForeignKey, case)
 from sqlalchemy.orm import Mapped, mapped_column, relationship
 from datetime import datetime, timezone
 from enum import Enum as _Enum
-from message_app.models import BaseModel, User
+from msg.models import BaseModel, User
 from sqlalchemy.ext.mutable import MutableDict, MutableList
 
+
 class Message(BaseModel):
-    
+
     __tablename__ = 'messages'
 
-    from_user_id: Mapped[str] = mapped_column(String(60), ForeignKey('users.user_id'), nullable=False)
+    from_user_id: Mapped[str] = mapped_column(
+        String(60), ForeignKey('users.user_id'), nullable=False)
     from_user_key: Mapped[str] = mapped_column(String(60), nullable=False)
-    to_user_id: Mapped[str] = mapped_column(String(60), ForeignKey('users.user_id'), nullable=False)
-    product: Mapped[dict] = mapped_column(MutableDict.as_mutable(JSON), nullable=True)
+    to_user_id: Mapped[str] = mapped_column(
+        String(60), ForeignKey('users.user_id'), nullable=False)
+    product: Mapped[dict] = mapped_column(
+        MutableDict.as_mutable(JSON), nullable=True)
     content: Mapped[str] = mapped_column(Text, nullable=True)
     media_name: Mapped[str] = mapped_column(String(240), nullable=True)
-    is_viewed: Mapped[bool] = mapped_column(Boolean, default = False)
+    is_viewed: Mapped[bool] = mapped_column(Boolean, default=False)
 
-    from_user = relationship('User', foreign_keys=[from_user_id], back_populates='sent_messages')
-    to_user = relationship('User', foreign_keys=[to_user_id], back_populates='received_messages')
+    from_user = relationship('User', foreign_keys=[
+                             from_user_id], back_populates='sent_messages')
+    to_user = relationship('User', foreign_keys=[
+                           to_user_id], back_populates='received_messages')
 
     @classmethod
     def get_last_messages(cls, user_id, db):
@@ -50,7 +56,7 @@ class Message(BaseModel):
                 subquery,
                 (cls.created_at == subquery.c.max_created_at) &
                 ((cls.from_user_id == subquery.c.user1) & (cls.to_user_id == subquery.c.user2) |
-                (cls.from_user_id == subquery.c.user2) & (cls.to_user_id == subquery.c.user1))
+                 (cls.from_user_id == subquery.c.user2) & (cls.to_user_id == subquery.c.user1))
             )
             .order_by(cls.created_at.desc())
         )

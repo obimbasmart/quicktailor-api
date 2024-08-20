@@ -1,18 +1,12 @@
-from pydantic import BaseModel, field_validator, model_validator
-from typing import List, Optional
+from pydantic import BaseModel, model_validator, computed_field, Field
+from typing import Optional, Literal
 from datetime import datetime
-from enum import Enum as _Enum
-
-class UserType(_Enum):
-    USER = "user"
-    ADMIN = "admin"
-    TAILOR = "tailor"
 
 
-class UserInfo(BaseModel):
+class UserMessageData(BaseModel):
     message_key: str
-    user_type: UserType
-    user_id: str
+    user_id: str = Field(..., alise='id')
+    user_type: Literal['user', 'tailor', 'admin']
 
 class ProductItem(BaseModel):
     id: str

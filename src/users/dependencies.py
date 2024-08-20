@@ -9,7 +9,6 @@ from exceptions import not_found_exception, unauthorized_access_exception
 
 def get_user_by_email(req_body: UserRegIn = Body(...), db: Session = Depends(get_db)) -> User:
     user = db.query(User).filter(req_body.email == User.email).one_or_none()
-    print(req_body)
     return user
 
 

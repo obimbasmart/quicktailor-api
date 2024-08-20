@@ -18,8 +18,6 @@ def create_user(user: UserRegIn, db: Session):
     new_user.set_password(user.password)
     new_user.message_key = generate_uuid()
 
-    # TODO: sychronize user to message service
-
     db.add(new_user)
     db.commit()
     db.refresh(new_user)

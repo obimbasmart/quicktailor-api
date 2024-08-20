@@ -5,12 +5,14 @@ from datetime import datetime, timezone
 from sqlalchemy_json import NestedMutableJson
 from enum import Enum as _Enum
 from sqlalchemy.ext.mutable import MutableDict, MutableList
-from message_app.database import Base
+from msg.database import Base
+
 
 class UserType(_Enum):
     USER = "user"
     ADMIN = "admin"
     TAILOR = "tailor"
+
 
 class BaseModel(Base):
     __abstract__ = True
@@ -33,13 +35,16 @@ class BaseModel(Base):
         return "[{:s}] ({:s}) {}".format(self.__class__.__name__, self.id,
                                          self.__dict__)
 
+
 class User(BaseModel):
- 
+
     __tablename__ = "users"
 
     user_id: Mapped[str] = mapped_column(String(60), nullable=False)
     user_type: Mapped[UserType] = mapped_column(Enum(UserType), nullable=False)
     message_key: Mapped[str] = mapped_column(String(60), nullable=False)
 
-    sent_messages = relationship('Message', foreign_keys='Message.from_user_id', back_populates='from_user')
-    received_messages = relationship('Message', foreign_keys='Message.to_user_id', back_populates='to_user')
+    sent_messages = relationship(
+        'Message', foreign_keys='Message.from_user_id', back_populates='from_user')
+    received_messages = relationship(
+        'Message', foreign_keys='Message.to_user_id', back_populates='to_user')

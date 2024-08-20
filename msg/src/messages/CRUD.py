@@ -1,11 +1,11 @@
 from fastapi import HTTPException
 from sqlalchemy.orm import Session
 from datetime import datetime, timedelta
-from message_app.src.messages.dependencies import verify_by_id, get_user_by_id
-from message_app.src.messages.models import Message
-from message_app.models import User
-from message_app.src.messages.schemas import UserInfo, SendMessageData, UpdateMessage
-from message_app.models import UserType
+from msg.src.messages.dependencies import verify_by_id, get_user_by_id
+from msg.src.messages.models import Message
+from msg.models import User
+from msg.src.messages.schemas import UserInfo, SendMessageData, UpdateMessage
+from msg.models import UserType
 
 
 def create_new_message(message_data: SendMessageData, from_user_id: str, to_user_id: str, db: Session):
@@ -65,19 +65,18 @@ def update_message(update_data: UpdateMessage, from_user_id: str, message_id: st
         raise HTTPException(status_code=404, detail="Message not found.")
 
 
-
 def is_viewed(message_id: str, to_user_id, db: Session):
 
-   message = db.query(Message).filter(Message.id == message_id).one_or_none()
-   if message.to_user_id != to_user_id:
-       raise HTTPException(status_code=401, detail="Unauthorized request")
-   if message:
-       message.is_viewed = True
-       db.commit()
-       db.refresh(message)
-       return message
-   else:
-       raise HTTPException(status_code=404, detail="Message not found.")
+    message = db.query(Message).filter(Message.id == message_id).one_or_none()
+    if message.to_user_id != to_user_id:
+        raise HTTPException(status_code=401, detail="Unauthorized request")
+    if message:
+        message.is_viewed = True
+        db.commit()
+        db.refresh(message)
+        return message
+    else:
+        raise HTTPException(status_code=404, detail="Message not found.")
 
 
 def get_last_messages_list(user_id, db):
