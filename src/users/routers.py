@@ -18,12 +18,14 @@ from src.carts.schemas import CartItems, AddCart, TailorInfo, ProductInfo
 from src.orders.schemas import ProductItem, UserItem, UserOrderItem
 from src.orders.dependencies import get_user_order
 from src.orders.models import OrderStatus
+from src.notifications.notification_socket import connected_users, NOTIFICATION_KEY
+from src.messages.message_list_socket import connected_users as msg_list_connected_users, MESSAGE_LIST_KEY
+# Create a Socket.IO client instance
 
 router = APIRouter(
     prefix="/users",
     tags=["users"],
 )
-
 
 @router.get('/{user_id}', response_model=UserInfo)
 async def get_single_user(user_id: UUID4, current_user=Depends(get_current_user),
@@ -31,6 +33,14 @@ async def get_single_user(user_id: UUID4, current_user=Depends(get_current_user)
     if not user:
         raise HTTPException(
             status_code=404, detail="User not found with the id")
+    if user.id in msg_list_connected_users:
+        notification_data = {
+            "type": "order",
+            "message": "Your order has been created successfully!",
+            "order_id": "order_id"
+        }
+        from socket_server import connect_and_rearrange_message_list
+        await connect_and_rearrange_message_list(MESSAGE_LIST_KEY, notification_data, user.id)
     return user
 
 

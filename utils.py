@@ -32,3 +32,6 @@ def format_validation_errors(exc: ValidationError):
     
     errors = [{"field": field, "message": ", ".join(messages)} for field, messages in error_dict.items()]
     return {"errors": errors}
+
+
+

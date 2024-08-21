@@ -17,4 +17,4 @@ class Cart(BaseModel):
 
     user = relationship("User", back_populates="carts")
     product = relationship("Product", back_populates="carts")
-
+    customization_code = relationship("Customization", back_populates="carts")

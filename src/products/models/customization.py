@@ -31,3 +31,4 @@ class Customization(BaseModel):
     is_active = Column(Boolean, default=True)
 
     orders = relationship('Order', back_populates='customization_code')
+    carts = relationship('Cart', back_populates='customization_code')
