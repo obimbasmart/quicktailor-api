@@ -1,7 +1,6 @@
 from database import SessionLocal
 from sqlalchemy.orm import Session
 
-
 def get_db():
     db: Session = SessionLocal()
     try:
@@ -15,3 +14,6 @@ def _utils_get_by_email(email: str, db: Session):
     if not user:
         return db.query(Tailor).filter(email==Tailor.email).one_or_none()
     return user
+
+
+
