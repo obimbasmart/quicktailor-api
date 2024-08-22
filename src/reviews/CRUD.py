@@ -3,15 +3,20 @@ from src.reviews.schemas import UploadReview
 from src.reviews.models import Review
 from src.orders.models import Order
 from src.tailors.models import Tailor
+from src.users.models import User
+from exceptions import already_exists_exception
 
 
-def create_new_review(review_data: UploadReview, user_id: str, order_id: str,  db: Session):
+def create_new_review(user: User, order: Order, req_body: UploadReview, db: Session):
     
-    check_review =  db.query(Review).filter(order_id==Review.order_id).one_or_none()
-    if check_review:
-        return None
+    if get_review_by_order_id(order.id, db):
+        raise already_exists_exception('Review')
 
-    new_review = Review(**review_data.model_dump(), user_id = user_id, order_id = order_id)
+
+    new_review = Review(**req_body.model_dump(exclude_unset=True),
+                        user_id = user.id,
+                        tailor_id = order.tailor.id,
+                        order_id = order.id)
     
     db.add(new_review)
     db.commit()
@@ -23,3 +28,7 @@ def get_tailor_reviews(tailor_id: str, db: Session):
             .join(Review.order) \
             .join(Order.tailor) \
             .filter(Tailor.id == tailor_id)
+
+
+def get_review_by_order_id(order_id: str, db: Session):
+    return db.query(Review).filter(order_id==Review.order_id).one_or_none()

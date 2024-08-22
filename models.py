@@ -36,6 +36,12 @@ class BaseModel(Base):
                                          self.__dict__)
 
 
+class UserType(_Enum):
+    Tailor = 'Tailor'
+    User = 'User'
+    Admin = 'Admin'
+
+
 class Gender(_Enum):
     MALE = 'MALE'
     FEMALE = 'FEMALE'

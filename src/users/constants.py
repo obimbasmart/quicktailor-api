@@ -1,33 +1,38 @@
-MALE_MEASUREMENTS = {
-    "measurement_type": "MALE",
-    **{name: 0.0 for name in [
-        "chest_burst", "stomach", "top_length", "shoulder",
-        "sleeve_length", "neck", "muscle", "waist", "laps",
-        "knee"
-    ]}
+MEASUREMENTS = {
+    "male": {
+        "chest_burst": 0.0,
+        "sleeve_length": 0.0,
+        "top_length": 0.0,
+        "stomach": 0.0,
+        "shoulder": 0.0,
+        "muscle": 0.0,
+        "neck": 0.0,
+        "waist": 0.0,
+        "laps": 0.0,
+        "knee": 0.0
+
+
+    },
+
+    "female": {
+        "hips": 0.0,
+        "burst": 0.0,
+        "neck": 0.0,
+        "waist": 0.0,
+        "shoulder": 0.0,
+        "full_length": 0.0,
+        "half_length": 0.0,
+        "round_sleeve": 0.0,
+
+
+    }
 }
 
-FEMALE_MEASUREMENTS = {
-    "measurement_type": "FEMALE",
-    **{name: 0.0 for name in [
-        "burst", "waist", "hips", "shoulder",
-        "full_length", "half_length", "round_sleeve", "neck"
-    ]}
-}
-VALID_MEASUREMENT_NAMES = [
-    "chest_burst", "stomach",
-    "top_length", "shoulder",
-    "sleeve_length", "neck",
-    "muscle", "waist", "laps",
-    "knee", "burst", "hips",
-    "full_length", "half_length",
-     "round_sleeve"
-]
 
 FAVORITES = {
     "tailors": [],
     "products": []
 }
 
-MEASUREMENT_TYPES = ["male", "female", "kids"]
+
 SUCCESSFUL_UPDATE = {"message": "Successfully updated"}

@@ -1,11 +1,12 @@
 from pydantic import BaseModel, UUID4, computed_field, Field, EmailStr
-from typing import List
+from typing import List, Dict
 from datetime import datetime
+from src.users.schemas import MeasurementItem, MaleMeasurement, FemaleMeasurement
 
 
-class AddCart(BaseModel):
+class AddToCart(BaseModel):
     product_id: str
-    measurements: dict
+    measurements: FemaleMeasurement | MaleMeasurement
 
 class RemoveCart(BaseModel):
     cart_id: str
@@ -24,11 +25,24 @@ class ProductInfo(BaseModel):
     id: UUID4
     name: str
     price: float
-    images: list
+    images: list = Field(exclude=True)
+    image_cover_index: int = Field(exclude=True)
+    tailor: TailorInfo = Field(exclude=True)
 
-class CartItems(BaseModel):
+    @computed_field
+    @property
+    def image(self) -> str:
+        return self.images[self.image_cover_index]
+
+
+
+class CartItem(BaseModel):
     id: str
     product: ProductInfo
-    tailor: TailorInfo
-
+    
+    
+    @computed_field
+    @property
+    def tailor(self) -> Dict:
+        return self.product
 

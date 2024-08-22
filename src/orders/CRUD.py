@@ -2,10 +2,11 @@ from fastapi import HTTPException
 from sqlalchemy.orm import Session
 from src.orders.models import Order, OrderStatus
 from src.orders.constants import OrderStageStatus
-from src.carts.models import Cart
+from src.carts.models import CartItem
 from typing import List
 from src.products.models.customization import Customization
 from sqlalchemy import func
+from exceptions import not_found_exception
 
 
 def create_orders(cart: List[str], payment_id: str, db: Session):
@@ -22,13 +23,13 @@ def create_orders(cart: List[str], payment_id: str, db: Session):
     return orders
 
 
-def create_single_order(cart_item: Cart, payment_id, db: Session) -> Order:
+def create_single_order(cart_item: CartItem, payment_id, db: Session) -> Order:
     new_order = Order(
         tailor_id=cart_item.product.tailor.id,
         payment_id=payment_id,
         user_id=cart_item.user_id,
         product_id=cart_item.product_id,
-        measurement=cart_item.measurement,
+        measurement=cart_item.measurements,
         customization_id=cart_item.customization_id,
     )
 
@@ -102,25 +103,21 @@ def update_order_status(order_id: str,  new_status: str, db: Session):
 
 
 def get_cart_items_by_id(cart: List[str], session: Session):
-    cart_items = session.query(Cart).filter(Cart.id.in_(cart)).all()
+    cart_items = session.query(CartItem).filter(CartItem.id.in_(cart)).all()
 
     if len(cart) != len(cart_items):
-        raise HTTPException(status_code=404,
-                            detail="One or more cart items not found")
-
+        raise not_found_exception('One or more cart items')
     return cart_items
 
 
 def get_cart_items_by_reference(reference: str, db: Session):
     cart_identifiers = reference.split('-')
-    cart_items = db.query(Cart).filter(
-        func.right(Cart.id, 6).in_(cart_identifiers)
+    cart_items = db.query(CartItem).filter(
+        func.right(CartItem.id, 6).in_(cart_identifiers)
     ).all()
 
     if len(cart_items) != len(cart_identifiers):
-        raise HTTPException(status_code=404,
-                            detail="One or more cart items not found")
-
+        raise not_found_exception('One or more cart items')
     return cart_items
 
 

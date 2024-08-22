@@ -1,5 +1,5 @@
 from pydantic import BaseModel, EmailStr, Field, ConfigDict, field_validator, ValidationInfo, model_validator
-from typing import Dict, Any
+from typing import Dict, Any, Optional
 from uuid import UUID
 
 
@@ -48,3 +48,4 @@ class LoginResponse(BaseModel):
 
 class BaseResponse(BaseModel):
     message: str
+    data: Optional[Dict] = None

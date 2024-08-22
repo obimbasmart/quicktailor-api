@@ -28,13 +28,12 @@ class Product(BaseModel):
     image_cover_index = Column(Integer, default=0)
 
     tailor = relationship("Tailor", back_populates="products")
-    # reviews = relationship('Review', back_populates='product')
-    carts =  relationship("Cart", back_populates="product")
+    reviews = relationship('Review', secondary='orders', viewonly=True, back_populates='product')
     orders = relationship("Order", back_populates="product")
 
 
     fabrics = relationship("Fabric", secondary=product_fabric, back_populates="products")
-    categories = relationship("Category", secondary=product_category, back_populates="products")
+    categories = relationship("Category", secondary=product_category, viewonly=True, back_populates="products")
 
 
 class Category(BaseModel):

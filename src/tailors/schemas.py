@@ -1,7 +1,9 @@
-from pydantic import BaseModel, UUID4, Field, computed_field, EmailStr
-from typing import Union, List
+from pydantic import BaseModel, UUID4, computed_field, EmailStr
+from typing import List
 from src.products.schemas import Category
 from typing import Optional
+from datetime import date
+from models import Gender
 
 class Location(BaseModel):
     state: str
@@ -69,3 +71,10 @@ class UpdateTailor(BaseModel):
 
     class Config:
         extra = 'forbid'
+
+class VerificationInfo(BaseModel):
+    first_name: str
+    last_name: str
+    DOB: date
+    gender: Gender
+    vNIN: str

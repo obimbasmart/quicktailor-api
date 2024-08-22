@@ -1,6 +1,6 @@
-from sqlalchemy import Boolean, Column, String, DATETIME, TEXT
+from sqlalchemy import Boolean, Column, String, DATETIME, TEXT, Enum, ForeignKey
 from sqlalchemy_json import NestedMutableJson
-from models import BaseUser
+from models import BaseUser, BaseModel, Gender
 from sqlalchemy.orm import relationship, Session
 
 class Tailor(BaseUser):
@@ -26,6 +26,7 @@ class Tailor(BaseUser):
 
     products = relationship('Product', back_populates="tailor")
     orders = relationship("Order", back_populates="tailor")
+    reviews = relationship("Review", backref="tailor", cascade="all, delete-orphan")
 
     def check_and_activate(self, db: Session):
         if all([
@@ -35,3 +36,18 @@ class Tailor(BaseUser):
         ]):
             self.is_enabled = True
             db.commit()
+
+
+class Verification(BaseModel):
+    __tablename__ = "verifications"
+    
+    tailor_id = Column(String(60), ForeignKey('tailors.id'), nullable=False)
+    first_name = Column(String(60), nullable=False)
+    last_name = Column(String(60), nullable=False)
+    DOB = Column(DATETIME, nullable=False)
+    vNIN = Column(String(60), nullable=False)
+    gender = Column(Enum(Gender), nullable=False)
+    photo = Column(TEXT, nullable=True)
+    is_api_verified = Column(Boolean, default=False)
+    status = Column(String(128), nullable=True)
+    message = Column(TEXT, nullable=True)

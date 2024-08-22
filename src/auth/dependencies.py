@@ -1,4 +1,4 @@
-from typing import Annotated
+from typing import Annotated, Union
 from src.auth.config import settings as auth_settings
 import jwt
 from fastapi import Depends, HTTPException, status, Body
@@ -9,9 +9,10 @@ from fastapi import Depends
 from src.auth.utils import get_by_email as utils_get_by_email
 from src.users.models import User
 from src.tailors.models import Tailor
-from src.auth.schemas import Login
+from src.admin.models import Admin
+from src.auth.schemas import Login, UserRegIn, TailorRegIn, AdminRegIn
 from sqlalchemy.orm import Session
-
+from exceptions import already_exists_exception
 
 
 oauth2_scheme = OAuth2PasswordBearer(tokenUrl="token")
@@ -24,7 +25,8 @@ async def get_current_user(token: Annotated[str, Depends(oauth2_scheme)], db: Se
         headers={"WWW-Authenticate": "Bearer"},
     )
     try:
-        payload = jwt.decode(token, auth_settings.SECRET_KEY, algorithms=[auth_settings.ALGORITHM])
+        payload = jwt.decode(token, auth_settings.SECRET_KEY,
+                             algorithms=[auth_settings.ALGORITHM])
         email: str = payload.get("email")
         if email is None:
             raise credentials_exception
@@ -35,5 +37,8 @@ async def get_current_user(token: Annotated[str, Depends(oauth2_scheme)], db: Se
         raise credentials_exception
     return user
 
-def get_by_email(req_body: Login = Body(...),  db = Depends(get_db)):
+
+def get_by_email(req_body: Union[Login, AdminRegIn, TailorRegIn, UserRegIn] = Body(...),
+                 db=Depends(get_db)):
     return utils_get_by_email(req_body.email, db)
+

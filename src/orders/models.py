@@ -32,6 +32,5 @@ class Order(BaseModel):
     user = relationship("User", back_populates="orders")
     product = relationship("Product", back_populates="orders")
     tailor = relationship("Tailor", back_populates="orders")
-    customization_code = relationship(
-        "Customization", back_populates="orders")
+    customization_code = relationship("Customization", back_populates="orders")
     review = relationship("Review", back_populates="order")
