@@ -101,7 +101,7 @@ class MessageNamespace(socketio.AsyncNamespace):
             "x-secret-key": f"{SECRET_KEY}",
             "Content-Type": "application/json"
         }
-        
+        print("This is the data mesage sent ", send_data) 
         message_response = requests.post(f"http://127.0.0.1:8001/chats/{sender_id}/messages/{reciever_id}", json=send_data, headers=headers)
         
         if 'detail' in message_response.json() or 'errors' in message_response.json():
