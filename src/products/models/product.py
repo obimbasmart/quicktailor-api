@@ -30,7 +30,7 @@ class Product(BaseModel):
     tailor = relationship("Tailor", back_populates="products")
     reviews = relationship('Review', secondary='orders', viewonly=True, back_populates='product')
     orders = relationship("Order", back_populates="product")
-
+    carts = relationship("CartItem", back_populates="product")
 
     fabrics = relationship("Fabric", secondary=product_fabric, back_populates="products")
     categories = relationship("Category", secondary=product_category, viewonly=True, back_populates="products")

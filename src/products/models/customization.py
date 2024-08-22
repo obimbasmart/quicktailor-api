@@ -5,7 +5,6 @@ from datetime import datetime, timezone
 from enum import Enum as _Enum
 from sqlalchemy.orm import relationship
 
-
 class UNIT(_Enum):
     NAIRA = 0
     PERCENT = 1
@@ -31,4 +30,4 @@ class Customization(BaseModel):
     is_active = Column(Boolean, default=True)
 
     orders = relationship('Order', back_populates='customization_code')
-    carts = relationship('Cart', back_populates='customization_code')
+    carts = relationship('CartItem', back_populates='customization_code')
