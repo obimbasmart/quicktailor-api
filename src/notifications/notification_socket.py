@@ -54,7 +54,6 @@ class NotificationNamespace(socketio.AsyncNamespace):
             print("No token provided. Disconnecting.")
             await self.disconnect(sid)
             return
-
         try:
             current_user = get_current_user(token, db)
             connected_users[current_user.id] = sid
@@ -62,7 +61,6 @@ class NotificationNamespace(socketio.AsyncNamespace):
         except HTTPException:
             if token == NOTIFICATION_KEY:
                 connected_users['notification_app'] = sid
-
                 print(f"Notification Application connected  to notification event with session id {sid}")
             else:
                 print("Invalid token. Disconnecting.")
