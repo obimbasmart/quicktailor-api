@@ -3,6 +3,9 @@ from typing import Dict, Any, Optional
 from uuid import UUID
 
 
+class Email(BaseModel):
+    email: EmailStr
+
 class BaseUser(BaseModel):
     model_config = ConfigDict(regex_engine='python-re')
 

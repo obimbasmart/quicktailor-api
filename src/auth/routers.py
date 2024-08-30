@@ -12,6 +12,9 @@ from src.admin.CRUD import _create_admin
 from src.messages.dependencies import send_user_data_to_message_system, get_user_msg_data
 from exceptions import already_exists_exception
 from responses import create_success_response
+from time import sleep
+from src.auth.schemas import Email
+from fastapi.responses import JSONResponse
 
 
 router = APIRouter(
@@ -28,6 +31,8 @@ def register_user(req_body: UserRegIn,
                   db=Depends(get_db)):
     if user:
         raise already_exists_exception('User')
+
+    start = sleep(5)
 
     user = create_user(req_body, db)
     user_data = get_user_msg_data(user)
@@ -59,11 +64,11 @@ def register_admi(req_body: AdminRegIn,
     if admin:
         raise already_exists_exception('User')
 
-
     admin = _create_admin(req_body, db)
     admin_data = get_user_msg_data(admin)
     background_task.add_task(send_user_data_to_message_system, admin_data)
     return create_success_response('Admin')
+
 
 @router.post("/login", response_model=LoginResponse)
 def login(req_body: Login, user=Depends(get_by_email)):
@@ -74,3 +79,13 @@ def login(req_body: Login, user=Depends(get_by_email)):
     access_token = create_access_token(
         {"email": user.email}, auth_settings.ACCESS_TOKEN_EXPIRE_MINUTES)
     return {"access_token": access_token, "data": {"id": user.id}}
+
+
+@router.post('/check-email')
+async def check_email_exists(req_body: Email,
+                       user=Depends(get_by_email)):
+    if user:
+        return JSONResponse(content={"message": "succes", "available": True},
+                            status_code=status.HTTP_200_OK)
+    return JSONResponse(content={"message": "succes", "available": False},
+                        status_code=status.HTTP_409_CONFLICT)

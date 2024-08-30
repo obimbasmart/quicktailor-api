@@ -1,10 +1,8 @@
-from sqlalchemy import String, Column, Boolean, ForeignKey,  TEXT, Enum
+from sqlalchemy import String, Enum
 from sqlalchemy.orm import Mapped, relationship, mapped_column
 import uuid
 from datetime import datetime, timezone
-from sqlalchemy_json import NestedMutableJson
 from enum import Enum as _Enum
-from sqlalchemy.ext.mutable import MutableDict, MutableList
 from msg.database import Base
 
 
