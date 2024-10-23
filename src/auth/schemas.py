@@ -6,14 +6,19 @@ from uuid import UUID
 class Email(BaseModel):
     email: EmailStr
 
-class BaseUser(BaseModel):
-    model_config = ConfigDict(regex_engine='python-re')
 
+class EmailOtp(BaseModel):
     email: EmailStr
-    phone: str = Field(max_length=11)
+    otp: str = Field(pattern=r"^\d{6}$")
+
+
+class BaseUser(BaseModel):
+    model_config = ConfigDict(regex_engine='python-re', extra='forbid')
+    email: EmailStr
     password: str = Field(
         ..., pattern=r'^(?=.*?[A-Z])(?=.*?[a-z])(?=.*?[0-9])(?=.*?[#?!@$%^&*-]).{8,}$')
     password_2: str
+    otp: str = Field(pattern=r"^\d{6}$")
 
     @model_validator(mode='after')
     def check_passwords_match(self):
@@ -22,10 +27,9 @@ class BaseUser(BaseModel):
         return self
 
 
+
 class UserRegIn(BaseUser):
-    username: str = Field(..., pattern=r'^[A-Za-z][A-Za-z0-9_]{4,20}$')
-    # class Config:
-    #   extra = 'forbid'
+    pass
 
 
 class TailorRegIn(BaseUser):
@@ -39,6 +43,7 @@ class TailorRegIn(BaseUser):
 class AdminRegIn(BaseUser):
     sso: str
 
+
 class Login(BaseModel):
     email: EmailStr
     password: str
@@ -46,7 +51,7 @@ class Login(BaseModel):
 
 class LoginResponse(BaseModel):
     access_token: str
-    data: Dict[str, UUID]
+    data: Dict[str, str]
 
 
 class BaseResponse(BaseModel):

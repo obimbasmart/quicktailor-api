@@ -9,14 +9,19 @@ from src.products.CRUD import get_product_by_id
 
 from src.users.constants import SUCCESSFUL_UPDATE
 from fastapi import HTTPException
-from exceptions import not_found_exception
+from exceptions import not_found_exception, unauthorized_access_exception
+from services.otp import otp_service
 
 
 def create_user(user: UserRegIn, db: Session):
+    if not otp_service.verify_otp(user.email, user.otp):
+        raise unauthorized_access_exception("Invalid OTP")
+
     new_user = User(**user.model_dump(exclude=["password", 'password_2']))
 
     new_user.set_password(user.password)
     new_user.message_key = generate_uuid()
+    new_user.username = "User-" + new_user.id[-4:]
 
     db.add(new_user)
     db.commit()

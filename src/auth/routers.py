@@ -12,9 +12,10 @@ from src.admin.CRUD import _create_admin
 from src.messages.dependencies import send_user_data_to_message_system, get_user_msg_data
 from exceptions import already_exists_exception
 from responses import create_success_response
-from time import sleep
-from src.auth.schemas import Email
+from src.auth.schemas import Email, EmailOtp
 from fastapi.responses import JSONResponse
+from services.otp import otp_service
+from services.otp import otp_service
 
 
 router = APIRouter(
@@ -32,12 +33,9 @@ def register_user(req_body: UserRegIn,
     if user:
         raise already_exists_exception('User')
 
-    start = sleep(5)
-
     user = create_user(req_body, db)
     user_data = get_user_msg_data(user)
-    background_task.add_task(send_user_data_to_message_system, user_data)
-
+    # background_task.add_task(send_user_data_to_message_system, user_data)
     return create_success_response('User')
 
 
@@ -78,14 +76,35 @@ def login(req_body: Login, user=Depends(get_by_email)):
 
     access_token = create_access_token(
         {"email": user.email}, auth_settings.ACCESS_TOKEN_EXPIRE_MINUTES)
-    return {"access_token": access_token, "data": {"id": user.id}}
+
+    data = {
+        "id": user.id,
+        "email": user.email,
+        "username": user.username
+    }
+    return {"access_token": access_token, "data": data}
 
 
 @router.post('/check-email')
 async def check_email_exists(req_body: Email,
-                       user=Depends(get_by_email)):
-    if user:
-        return JSONResponse(content={"message": "succes", "available": True},
+                             user=Depends(get_by_email)):
+    if not user:
+        otp = otp_service.generate_and_store_otp(req_body.email)
+        # Todo: send otp email
+        print(otp)
+        return JSONResponse(content={"message": "success", "available": False},
                             status_code=status.HTTP_200_OK)
-    return JSONResponse(content={"message": "succes", "available": False},
+    return JSONResponse(content={"message": "success", "available": True},
                         status_code=status.HTTP_409_CONFLICT)
+
+
+@router.post('/verify-otp')
+def verify_otp(req_body: EmailOtp):
+    is_valid = otp_service.verify_otp(req_body.email, req_body.otp)
+
+    if is_valid:
+        return JSONResponse(content={"message": "success"},
+                            status_code=status.HTTP_200_OK)
+
+    return JSONResponse(content={"message": "otp does not match"},
+                        status_code=status.HTTP_401_UNAUTHORIZED)
