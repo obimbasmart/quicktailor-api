@@ -55,7 +55,7 @@ def register_tailor(req_body: TailorRegIn,
 
 
 @router.post("/register/admin", response_model=BaseResponse)
-def register_admi(req_body: AdminRegIn,
+def register_admin(req_body: AdminRegIn,
                   background_task: BackgroundTasks,
                   admin=Depends(get_by_email),
                   db=Depends(get_db)):
@@ -77,11 +77,15 @@ def login(req_body: Login, user=Depends(get_by_email)):
     access_token = create_access_token(
         {"email": user.email}, auth_settings.ACCESS_TOKEN_EXPIRE_MINUTES)
 
+    user_type = user.__class__.__name__
+
     data = {
         "id": user.id,
         "email": user.email,
-        "username": user.username
+        "username": user.username if user_type == 'User' else "Expert-" + user.id[-4:],
+        "type": user_type
     }
+
     return {"access_token": access_token, "data": data}
 
 

@@ -13,6 +13,7 @@ def create_tailor(tailor: TailorRegIn, db: Session):
 
     new_tailor.set_password(tailor.password)
     new_tailor.message_key = generate_uuid()
+    new_tailor.brand_name = "Expert-" + new_tailor.id[-4:]
 
     # TODO: sychronize tailor to message service
 
