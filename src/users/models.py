@@ -8,7 +8,7 @@ from sqlalchemy.orm import relationship
 
 class User(BaseUser):
     __tablename__ = "users"
-    username = Column(String(60), nullable=False)
+    username = Column(String(60), nullable=True)
     measurements = Column(NestedMutableJson, default=MEASUREMENTS)
     favorites = Column(NestedMutableJson, default=FAVORITES)
     carts = relationship('CartItem', back_populates='user')

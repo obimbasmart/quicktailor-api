@@ -6,8 +6,8 @@ from sqlalchemy.orm import relationship, Session
 class Tailor(BaseUser):
     __tablename__ = "tailors"
     
-    first_name = Column(String(60), nullable=False)
-    last_name = Column(String(60), nullable=False)
+    first_name = Column(String(60), nullable=True)
+    last_name = Column(String(60), nullable=True)
     DOB = Column(DATETIME, nullable=True)
     brand_name = Column(String(60), nullable=True)
     about = Column(String(400), nullable=True)
