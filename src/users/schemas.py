@@ -13,6 +13,7 @@ class PasswordReset(BaseModel):
 class Location(BaseModel):
     state: str
     city: str
+    country:str
     address: str
 
 
@@ -79,8 +80,8 @@ class UpdateUserFields(BaseModel):
 
 
 class Favorites(BaseModel):
-    tailors: list[TailorListItem]
-    products: list[ProductItem]
+    tailors: list[str]
+    products: list[str]
 
 
 class AddFavorite(BaseModel):
