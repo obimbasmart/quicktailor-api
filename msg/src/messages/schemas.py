@@ -32,31 +32,26 @@ class MessageListResponse(BaseMessage):
 class MessageHistoryResponse(BaseMessage):
     updated_at: datetime | None
     product: ProductItem | None
-    media: str = None
+    media_name: str | None
     from_user_id: str
     to_user_id: str
-
-
-class ProductItem(BaseModel):
-    # Define the ProductItem model according to your needs
-    pass
 
 
 class SendMessageData(BaseModel):
     content: Optional[str] = None
     product: Optional[ProductItem] = None
-    media: Optional[str] = None
+    media_name: Optional[str] = None
     message_key: str
 
     @model_validator(mode='after')
     def check_constraints(self):
         # Ensure at least one of content, product, or media is not None
-        if not any([self.content, self.product, self.media]):
+        if not any([self.content, self.product, self.media_name]):
             raise ValueError(
                 "At least one of 'content', 'product', or 'media' must be provided.")
 
         # If 'product' is provided, 'content' or 'media' must not be None
-        if self.product and not any([self.content, self.media]):
+        if self.product and not any([self.content, self.media_name]):
             raise ValueError(
                 "'content' or 'media' must be provided if 'product' is specified.")
 

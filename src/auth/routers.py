@@ -84,7 +84,7 @@ def login(req_body: Login, user=Depends(get_by_email)):
 @router.post('/check-email')
 async def check_email_exists(req_body: Email,
                        user=Depends(get_by_email)):
-    if user:
+    if not user:
         return JSONResponse(content={"message": "succes", "available": True},
                             status_code=status.HTTP_200_OK)
     return JSONResponse(content={"message": "succes", "available": False},

@@ -37,6 +37,7 @@ def get_product(product_id: str,
                 current_user=Depends(get_current_user),
                 db=Depends(get_db)):
     products = get_product_by_id(product_id, db)
+    print(products.tailor)
     return products
 
 

@@ -26,7 +26,6 @@ def create_new_message(message_data: SendMessageData, from_user_id: str, to_user
         if not check_message:
             raise HTTPException(status_code=401, detail="Unauthorized access")
 
-    print("This is the check Message ", sender.user_type)
     if sender.message_key != message_data.message_key:
         raise HTTPException(status_code=422, detail="Invalid Message Key")
     if not data:
@@ -67,10 +66,10 @@ def update_message(update_data: UpdateMessage, from_user_id: str, message_id: st
 
 def is_viewed(message_id: str, to_user_id, db: Session):
 
-    message = db.query(Message).filter(Message.id == message_id).one_or_none()
-    if message.to_user_id != to_user_id:
-        raise HTTPException(status_code=401, detail="Unauthorized request")
+    message = db.query(Message).filter(Message.id == message_id, Message.to_user_id == to_user_id).one_or_none()
     if message:
+        if message.to_user_id != to_user_id:
+            raise HTTPException(status_code=401, detail="Unauthorized request")
         message.is_viewed = True
         db.commit()
         db.refresh(message)

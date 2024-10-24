@@ -2,7 +2,6 @@ from pydantic import BaseModel, UUID4, computed_field, Field, EmailStr
 from typing import List, Optional
 from datetime import datetime
 
-
 class Category(BaseModel):
     id: UUID4
     name: str
@@ -10,6 +9,43 @@ class Category(BaseModel):
 class Fabric(BaseModel):
     id: UUID4
     name: str
+
+class TailorListInfo(BaseModel):
+    id: UUID4
+    brand_name: str | None
+    photo: str | None
+    is_available: bool
+
+    class Config:
+        from_attributes = True
+
+class TailorListItem(BaseModel):
+    id: str = UUID4
+    brand_name: str | None
+    photo: str | None
+    is_verified: bool
+    is_available: bool
+    categories: List[Category] = []
+
+
+    @computed_field
+    @property
+    def no_products(self) -> int:
+        return 0
+
+    @computed_field
+    @property
+    def no_reviews(self) -> int:
+        return 0
+
+    @computed_field
+    @property
+    def avg_rating(self) -> float:
+        return 0.0
+
+    class Config:
+        from_attributes = True
+
 
 class ProductItem(BaseModel):
     id: UUID4
@@ -20,15 +56,8 @@ class ProductItem(BaseModel):
     fabrics: List[Fabric]
     categories: List[Category]
     colors: List
+    tailor: TailorListItem | None
 
-class TailorListInfo(BaseModel):
-    id: UUID4
-    brand_name: str | None
-    photo: str | None
-    is_available: bool
-
-    class Config:
-        from_attributes = True
 
 class ProductListItem(BaseModel):
     id: UUID4

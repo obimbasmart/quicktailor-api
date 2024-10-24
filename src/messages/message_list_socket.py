@@ -3,7 +3,7 @@ from fastapi import HTTPException, status
 import os
 from fastapi.encoders import jsonable_encoder
 from pydantic import ValidationError
-from src.messages.message_socket import db, get_current_user
+from src.messages.message_socket import db, get_current_user_for_socket
 # Assuming these are available globally or imported
 
 connected_users = {}
@@ -15,7 +15,6 @@ class MessageListNamespace(socketio.AsyncNamespace):
         # Extract the token from the query parameters
         query_string = environ.get('QUERY_STRING', '')
         token = None
-
         for param in query_string.split('&'):
             if param.startswith('token='):
                 token = param.split('=')[1]
@@ -25,9 +24,8 @@ class MessageListNamespace(socketio.AsyncNamespace):
             print("No token provided. Disconnecting.")
             await self.disconnect(sid)
             return
-
         try:
-            current_user = get_current_user(token, db)
+            current_user = get_current_user_for_socket(token, db)
             connected_users[current_user.id] = sid
             print(f"User {current_user.id} connected to  Message_list_app with session id {sid}")
         except HTTPException:
@@ -46,25 +44,15 @@ class MessageListNamespace(socketio.AsyncNamespace):
             if session_id == sid:
                 user_id_to_remove = user_id
                 break
-
         if user_id_to_remove:
             del connected_users[user_id_to_remove]
             print(f"User {user_id_to_remove} disconnected")
 
        
     async def on_rearrange_message_list(self, sid, data):
-        print("dslfjlkjd sdkljfsdljf ", connected_users) 
         if not data.get('secret_xxn_key'):
             await self.emit("message_error", {"status": "error", "message": "Unauthorized access."}, room=sid)
             return
         reciever_sid = connected_users[data.get('reciever_id')]
-        
-        """try:
-            notification_data = NotificationResponse(**data.get('notification'))
-        except ValidationError:
-            await self.emit("message_error", {"status": "error", "message": "Invalid notification format."}, room=sid)
-            return
-        """
-    
         await self.emit('rearrange_message_list', data.get('message_list'), room=reciever_sid)
 
