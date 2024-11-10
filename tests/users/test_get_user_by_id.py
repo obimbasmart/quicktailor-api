@@ -19,6 +19,5 @@ def test_get_single_user_not_found(access_token_user, reset_db):
 
     # Get user
     response = client.get("/users/{}".format(invalid_user_id), headers=access_token_user['header'])
-    print(response.json())
     assert response.status_code == 404
     assert response.json() == {"detail": "User not found with the id"}

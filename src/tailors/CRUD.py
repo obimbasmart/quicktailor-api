@@ -1,7 +1,7 @@
 
 from src.auth.schemas import TailorRegIn
 from src.tailors.schemas import UpdateTailor, VerificationInfo
-from .models import Tailor, Verification
+from .models import Tailor, Verification, TailorType
 from sqlalchemy.orm import Session
 from fastapi import File
 from utils import generate_uuid
@@ -44,6 +44,16 @@ def _update_tailor(tailor: Tailor, req_body: UpdateTailor, db: Session):
         ]
 
     tailor.check_and_activate(db)
+
+    db.commit()
+    db.refresh(tailor)
+    return tailor
+
+def _update_tailor_type(tailor: Tailor, req_body: UpdateTailor, db: Session):
+    update_data = req_body.model_dump(exclude_unset=True)
+
+    if update_data['type'] == 'SHOEMAKER':
+        tailor.type = TailorType.shoemaker
 
     db.commit()
     db.refresh(tailor)

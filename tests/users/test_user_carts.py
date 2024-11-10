@@ -88,8 +88,6 @@ def test_delete_cart_successful(access_token_user, access_token_tailor, remove_c
         headers=access_token_user['header']
     )
 
-    print("This is the response for Deletion", delete_response.json())
-
     assert delete_response.status_code == 200, f"Expected 200, got {delete_response.status_code}"
 
 

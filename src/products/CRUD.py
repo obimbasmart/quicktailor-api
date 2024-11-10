@@ -3,18 +3,20 @@ from sqlalchemy.orm import Session
 from src.products.models.product import Product
 from uuid import UUID
 from typing import List
-from src.products.models.product import Fabric, Category
 from src.products.models.customization import Customization
 from src.tailors.models import Tailor
 from src.users.models import User
+from src.products.models.product import Category
+from models import ProductType
 from exceptions import not_found_exception, access_denied_exception, bad_request_exception
 
-def _create_product(product_data: ProductUpload, id: UUID, db: Session) -> Product:
-    new_product = Product(**product_data.model_dump(exclude=["categories", "fabrics"]),
-                          tailor_id=id)
+def _create_product(product_data: ProductUpload, tailor, db: Session) -> Product:
+    new_product = Product(**product_data.model_dump(exclude=["categories"]),
+                          tailor_id=tailor.id)
 
-    new_product.fabrics = get_fabric_objects(product_data.fabrics, db)
     new_product.categories = get_category_objects(product_data.categories, db)
+    if tailor.type.value == 'SHOEMAKER':
+        new_product.type = ProductType.footwear
 
     db.add(new_product)
     db.commit()
@@ -33,7 +35,7 @@ def get_product_by_id(id: str, db: Session):
     return product
 
 
-def _delete_product(id: str, tailor: Tailor, db: Session):
+def _delete_product(id: str, tailor: Tailor, db: Session) -> List[str]:
     product = db.query(Product).filter(id == Product.id).one_or_none()
     if not product:
         raise not_found_exception('product')
@@ -41,13 +43,14 @@ def _delete_product(id: str, tailor: Tailor, db: Session):
     if product.id not in [product.id for product in tailor.products]:
         raise access_denied_exception()
 
+    images = product.images
     try:
         db.delete(product)
         db.commit()
     except:
         raise bad_request_exception('Cannot delete: The product has dependent orders')
     
-    return True
+    return images
 
 
 def _create_custom_code(product_id: str, tailor_id: str, req_body: CreateCustomCode, db: Session):
@@ -77,8 +80,6 @@ def _update_product(product_id: str, req_body: ProductUpload, db: Session):
         for attr, val in update_data.items()
     ]
 
-    if req_body.fabrics:
-        product.fabrics += get_fabric_objects(req_body.fabrics, db)
     if req_body.categories:
         product.categories += get_category_objects(req_body.categories, db)
 
@@ -86,12 +87,8 @@ def _update_product(product_id: str, req_body: ProductUpload, db: Session):
     return product
 
 
-def get_fabric_objects(names: List[str], db) -> List[Fabric]:
-    fabric_objects = db.query(Fabric).filter(Fabric.name.in_(names)).all()
-    return fabric_objects
 
-
-def get_category_objects(names: List, db) -> List[Fabric]:
+def get_category_objects(names: List, db) -> List:
     category_objects = db.query(Category).filter(
         Category.name.in_(names)).all()
     return category_objects

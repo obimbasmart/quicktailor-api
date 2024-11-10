@@ -17,8 +17,6 @@ def test_update_user_success(access_token_user, info_update_fields, reset_db):
     update_response = client.put(
         "/users/{}".format(access_token_user['id']), json=info_update_fields.model_dump(), headers=access_token_user['header'])
 
-    print("we are herere", update_response)
-
 
 def test_invalid_fields(access_token_user, failure_data, reset_db):
 

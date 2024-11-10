@@ -39,7 +39,6 @@ async def update_user(req_body: UpdateUserFields,
                       current_user=Depends(get_current_user),
                       user=Depends(get_user_by_id),
                       db=Depends(get_db)):
-    print(req_body)
     verify_resource_access(user.id, current_user.id)
     update = _update_user(current_user, req_body, db)
     return update_success_response('User')

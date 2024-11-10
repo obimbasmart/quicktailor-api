@@ -1,9 +1,11 @@
-from pydantic import BaseModel, UUID4, computed_field, EmailStr
-from typing import List
+from pydantic import BaseModel, UUID4, computed_field, EmailStr, Field
+from typing import List, Union
 from src.products.schemas import Category
-from typing import Optional
+from typing import Optional, Dict
 from datetime import date
 from models import Gender
+from datetime import datetime
+from src.storage.aws_s3_storage import s3_client
 
 class Location(BaseModel):
     state: str
@@ -22,6 +24,7 @@ class TailorListItem(BaseModel):
     is_verified: bool
     is_available: bool
     categories: List[Category] = []
+    type: str
 
 
     @computed_field
@@ -43,18 +46,44 @@ class TailorListItem(BaseModel):
         from_attributes = True
 
 class TailorItem(TailorListItem):
-    first_name: str
-    last_name: str
+    # first_name: str
+    # last_name: str
     email: EmailStr
     is_enabled: bool
-    phone: str
+    # phone: str
     about: str | None
     address: Location | None
+    type: str
 
     @computed_field
     @property
     def no_completed_jobs(self) -> int:
         return 0
+    
+class TailorProductListItem(BaseModel):
+    id: UUID4
+    name: str
+    price: float
+    image_cover_index: int = Field(exclude=True, default=0)
+    image: Dict
+    created_at: datetime
+
+class TailorProductItem(BaseModel):
+    id: UUID4
+    name: str
+    price: float
+    description: str
+    images: List = Field(exclude=True, default=[])
+    created_at: datetime
+    is_active: bool
+    is_published: bool
+    categories: List
+
+    @computed_field
+    @property
+    def p_images(self) -> List:
+        return s3_client.generate_presigned_urls('get_object', self.images)
+    
 
 
 class UpdateTailor(BaseModel):
@@ -68,7 +97,13 @@ class UpdateTailor(BaseModel):
     push_notification: Optional[bool] = None
     email_notification: Optional[bool] = None
     location_access: Optional[bool] = None
+    type: Optional[str] = None
 
+    class Config:
+        extra = 'forbid'
+
+class UpdateTailorType(BaseModel):
+    type: str = Union['TAILOR', 'SHOEMAKER']
     class Config:
         extra = 'forbid'
 
