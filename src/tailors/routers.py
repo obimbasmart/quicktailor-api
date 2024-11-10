@@ -1,12 +1,13 @@
 from fastapi import APIRouter, Depends, File, UploadFile, Form
 from fastapi.responses import JSONResponse
 from src.auth.dependencies import get_current_user
-from src.tailors.CRUD import get_tailors, _update_tailor, _upload_verification_details
+from src.tailors.CRUD import get_tailors, _update_tailor, _update_tailor_type, _upload_verification_details
 from src.tailors.dependencies import get_tailor_by_id, get_current_tailor
 from src.orders.dependencies import get_order_by_id
-from src.tailors.schemas import TailorItem, TailorListItem, UpdateTailor, VerificationInfo
+from src.tailors.schemas import TailorItem, TailorListItem, UpdateTailor, UpdateTailorType, VerificationInfo, TailorProductListItem, TailorProductItem
 from src.orders.schemas import TailorOrderListItem, TailorOrderItem
 from src.reviews.schemas import ReviewItem
+from src.products.CRUD import get_product_by_id
 from dependencies import get_db
 from typing import List
 from pydantic import UUID4
@@ -22,7 +23,8 @@ router = APIRouter(
 
 
 @router.get('', response_model=List[TailorListItem])
-def get_all_tailors(current_user=Depends(get_current_user),
+def get_all_tailors(
+    # current_user=Depends(get_current_user),
                     db=Depends(get_db)):
     tailors = get_tailors(db)
     return tailors
@@ -30,7 +32,7 @@ def get_all_tailors(current_user=Depends(get_current_user),
 
 @router.get('/{tailor_id}', response_model=TailorItem)
 def get_single_tailor(tailor_id: UUID4,
-                      current_user=Depends(get_current_user),
+                    #   current_user=Depends(get_current_user),
                       tailor=Depends(get_tailor_by_id)):
     return tailor
 
@@ -46,6 +48,17 @@ def update_tailor(tailor_id: str,
     tailor = _update_tailor(tailor, req_body, db)
     return update_success_response("Tailor")
 
+@router.patch('/{tailor_id}/type', response_model=None)
+def update_tailor_type(tailor_id: str,
+                        req_body: UpdateTailorType,
+                        current_user=Depends(get_current_tailor),
+                        db=Depends(get_db),
+                        tailor=Depends(get_tailor_by_id)):
+
+    verify_resource_access(tailor_id, current_user.id)
+    tailor = _update_tailor_type(tailor, req_body, db)
+    return update_success_response("Tailor")
+
 
 @router.get('/{tailor_id}/reviews', response_model=List[ReviewItem])
 def get_tailor_reviews(tailor_id: UUID4,
@@ -54,6 +67,23 @@ def get_tailor_reviews(tailor_id: UUID4,
 
     return tailor.reviews
 
+@router.get('/{tailor_id}/products', response_model=List[TailorProductListItem])
+def get_single_tailor(tailor_id: UUID4,
+                    #   current_user=Depends(get_current_user),
+                      tailor=Depends(get_tailor_by_id)):
+    
+    return tailor.products
+
+@router.get('/{tailor_id}/products/{product_id}', response_model=TailorProductItem)
+def get_single_tailor_product(
+                    tailor_id: UUID4, product_id: str,
+                    # current_user=Depends(get_current_user),
+                    db=Depends(get_db),
+                    tailor=Depends(get_tailor_by_id)):
+    # verify_resource_access(tailor.id, current_user.id)
+    product = get_product_by_id(product_id, db)
+    return product
+    
 
 @router.post('/{tailor_id}/verification')
 def upload_verification_details(tailor_id: UUID4,

@@ -4,6 +4,7 @@
 
 import redis
 from typing import Union, Callable, Any
+import json
 
 
 class Cache:
@@ -14,6 +15,10 @@ class Cache:
 
     def store(self, key: str, data: Union[str, bytes, int, float], expires: int = 3600) -> str:
         self._redis.set(key, data, ex=expires)
+        return key
+    
+    def store_json(self, key: str, data: Union[str, bytes, int, float, dict], expires: int = 3600) -> str:
+        self._redis.set(key, json.dumps(data))
         return key
 
     def get(self, key: str,
@@ -30,6 +35,11 @@ class Cache:
     def get_int(self, data: bytes) -> int:
         """convert to integer"""
         return int(data)
+    
+    def get_json(self, data: bytes) -> dict:
+        return json.loads(data)
+    
+
 
 
 cache = Cache()

@@ -8,12 +8,7 @@ class ProductUploadImageResponse(BaseModel):
     str: ImageItem
 
 
-class FabricItem(BaseModel):
-    id: str
-    name: str
-
-class FabricItemUpload(BaseModel):
-    name: str
-
-class FabricItemUpdate(BaseModel):
-    new_name: str
+class ImageMetadata(BaseModel):
+    width: int
+    height: int
+    type: str

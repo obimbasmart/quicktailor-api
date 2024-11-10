@@ -1,4 +1,4 @@
-from fastapi import APIRouter, Depends
+from fastapi import APIRouter, Depends, BackgroundTasks
 from src.tailors.dependencies import get_current_tailor
 from src.auth.dependencies import get_current_user
 from src.products.schemas import ProductUpload, ProductUpdate, ProductListItem, ProductItem, ProductTailorItem, CreateCustomCode
@@ -9,6 +9,7 @@ from dependencies import get_db
 from typing import List
 from fastapi.responses import JSONResponse
 from responses import delete_success_response, create_success_response, update_success_response
+from src.storage.aws_s3_storage import s3_client
 
 
 router = APIRouter(
@@ -21,12 +22,13 @@ router = APIRouter(
 def create_product(req_body: ProductUpload,
                    tailor=Depends(get_current_tailor),
                    db=Depends(get_db)):
-    new_product = _create_product(req_body, tailor.id, db)
+    new_product = _create_product(req_body, tailor, db)
     return create_success_response("Product", data={'id': new_product.id})
 
 
 @router.get('', response_model=List[ProductListItem])
-def get_products(current_user=Depends(get_current_user),
+def get_products(
+                # current_user=Depends(get_current_user),
                  db=Depends(get_db)):
     products = get_product_by_ids(db)
     return products
@@ -34,10 +36,9 @@ def get_products(current_user=Depends(get_current_user),
 
 @router.get('/{product_id}', response_model=ProductItem)
 def get_product(product_id: str,
-                current_user=Depends(get_current_user),
+                # current_user=Depends(get_current_user),
                 db=Depends(get_db)):
     products = get_product_by_id(product_id, db)
-    print(products.tailor)
     return products
 
 
@@ -52,9 +53,11 @@ def update_product(product_id: str,
 
 @router.delete('/{product_id}', response_model=BaseResponse)
 def delete_product(product_id: str,
+                   background_task: BackgroundTasks,
                    tailor=Depends(get_current_tailor),
                    db=Depends(get_db)):
-    product = _delete_product(product_id, tailor, db)
+    images = _delete_product(product_id, tailor, db)
+    background_task.add_task(s3_client.delete_files, images)
     return delete_success_response('Product')
 
 @router.get('/{product_id}/tailor', response_model=ProductTailorItem)

@@ -1,14 +1,13 @@
 from pydantic import BaseModel, UUID4, computed_field, Field, EmailStr
-from typing import List, Optional
+from typing import List, Optional, Dict
 from datetime import datetime
+from src.storage.aws_s3_storage import s3_client
+from src.reviews.schemas import ReviewItem
 
 class Category(BaseModel):
     id: UUID4
     name: str
 
-class Fabric(BaseModel):
-    id: UUID4
-    name: str
 
 class TailorListInfo(BaseModel):
     id: UUID4
@@ -52,20 +51,27 @@ class ProductItem(BaseModel):
     name: str
     price: float
     description: str
-    images: List[str]
-    fabrics: List[Fabric]
+    images: List[Dict] = Field(exclude=True)
     categories: List[Category]
-    colors: List
     tailor: TailorListItem | None
+    reviews: List[ReviewItem] = Field(max_length=2)
+
+    @computed_field
+    @property
+    def p_images(self) -> List:
+        return s3_client.generate_presigned_urls('get_object', self.images)
+    
 
 
 class ProductListItem(BaseModel):
     id: UUID4
     name: str
     price: float
-    images: List = Field(exclude=True, default=[])
+    image: Dict
+    images: List[Dict] = Field(exclude=True)
     image_cover_index: int = Field(exclude=True, default=0)
     tailor: TailorListInfo | None
+    type: str
 
 
     @computed_field
@@ -73,10 +79,6 @@ class ProductListItem(BaseModel):
     def average_rating(self) -> float:
         return 0.0
     
-    @computed_field
-    @property
-    def image(self) -> str:
-        return self.images[self.image_cover_index | 0]
     
 
     class Config:
@@ -86,13 +88,11 @@ class ProductUpload(BaseModel):
     name: str
     price: float
     description: str
-    estimated_tc: int
-    is_active: bool
-    fabrics: List[str]
-    colors: List[str]
+    duration: int
+    is_active: bool = Field(default=True)
     categories: List[str]
-    images: List = Field(..., max_length=4, min_length=2)
-    image_cover_index: int = Field(ge=0, le=4, default=0)
+    images: List = Field(..., max_length=6, min_length=2)
+    image_cover_index: int = Field(ge=0, le=6, default=0)
 
     class Config:
         extra = 'forbid'
@@ -105,7 +105,6 @@ class ProductUpdate(BaseModel):
     description: Optional[str] = None
     estimated_tc: Optional[int] = None
     is_active: Optional[bool] = None
-    fabrics: Optional[List[str]] = None
     colors: Optional[List[str]] = None
     categories: Optional[List[str]] = None
     images: Optional[List[str]] = Field(default=None, max_length=4, min_length=2)

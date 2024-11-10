@@ -46,6 +46,14 @@ class Gender(_Enum):
     MALE = 'MALE'
     FEMALE = 'FEMALE'
 
+class ProductType(_Enum):
+    cloth = 'CLOTH'
+    footwear = 'FOOTWEAR'
+
+class TailorType(_Enum):
+     tailor = 'TAILOR'
+     shoemaker = 'SHOEMAKER'
+
 
 class BaseUser(BaseModel):
     __abstract__ = True

@@ -50,7 +50,7 @@ class S3StorageService():
                                       ExtraArgs={'ContentType': file.content_type})
         return key_name
 
-    def generate_presigned_url(self, action_type: str, key_name: str) -> str:
+    def generate_presigned_url(self, action_type: str, key_name: str, width=None, height=None, aspect_ratio = None) -> str:
         """generate aws s3 url for performing actions on an object
 
         :param action_type: 'get_object' | 'put_object' | 'delete_object'
@@ -58,22 +58,30 @@ class S3StorageService():
         :return: presigned url
         """
 
-        # data = self.cache.get(key_name, self.cache.get_str)
-        # if data:
-        #     return data
+        data = self.cache.get(key_name, self.cache.get_json)
+        if data:
+            return data
 
         img_url = self.s3_client.generate_presigned_url(
             action_type,
             Params={'Bucket': self.bucket_name, 'Key': key_name},
             ExpiresIn=S3StorageService.__presigned_url_exp_time
         )
-        # self.cache.store(key_name, img_url, self.__presigned_url_exp_time)
-        return img_url
 
-    def generate_presigned_urls(self, action_type: str, key_names: List[str]) -> List[str]:
+        image_data = {
+            'url': img_url,
+            'width': width,
+            'height': height,
+            'aspect_ratio': aspect_ratio
+        }
+
+        self.cache.store_json(key_name, image_data, self.__presigned_url_exp_time)
+        return image_data
+
+    def generate_presigned_urls(self, action_type: str, images: List[Dict]) -> List[Dict]:
         return [
-            self.generate_presigned_url('get_object', key)
-            for key in key_names
+            self.generate_presigned_url('get_object', image['url'])
+            for image in images
         ]
 
     def upload_files(self, files: List[File], id: str, folder: str) -> Dict[str, str]:
@@ -81,9 +89,8 @@ class S3StorageService():
             self.upload_file(file, id, folder)
             for file in files
         ]
-        return {
-            f'img_{idx}': img_urls[idx] for idx in range(len(img_urls))
-        }
+        return img_urls
+  
 
     def delete_file(self, filename):
         return self.s3_client.delete_object(Bucket=self.bucket_name, Key=filename)
@@ -94,5 +101,5 @@ class S3StorageService():
             for filename in filenames
         ]
 
-
-s3_client = S3StorageService()
+from services.cache import cache
+s3_client = S3StorageService(cache=cache)
