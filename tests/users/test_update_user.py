@@ -44,7 +44,6 @@ def test_already_used_email(access_token_user, access_token_user_02, info_update
 
     update_response = client.put("/users/{}".format(other_user_id),
                                  json=info_update_fields_02.model_dump(), headers=access_token_user_02['header'])
-    print("This is the status code for succesful update", update_response.json())
     assert update_response.status_code == 422, "Expected 422, got {}".format(
         update_response.status_code)
     assert update_response.json()['detail']

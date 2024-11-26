@@ -45,6 +45,5 @@ def test_tailor_is_active(access_token_tailor, access_token_admin, update_data_t
 
     res = client.get(f"/tailors/{access_token_tailor.get('id')}",
                      headers=access_token_tailor.get('header'))
-    print(res.json())
     assert res.status_code == status.HTTP_200_OK
     assert res.json()['is_enabled'] == True
