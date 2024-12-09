@@ -82,7 +82,6 @@ async def get_user_favorites(user_id: str,
                              current_user=Depends(get_current_user),
                              db=Depends(get_db),
                              user=Depends(get_user_by_id)):
-    print(user.favorites)
     verify_resource_access(user.id, current_user.id)
     return user.favorites
 

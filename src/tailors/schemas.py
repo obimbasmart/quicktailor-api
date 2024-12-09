@@ -25,7 +25,22 @@ class TailorListItem(BaseModel):
     is_available: bool
     categories: List[Category] = []
     type: str
+    products: List = Field(exclude=True)
 
+
+    @computed_field
+    @property
+    def gallary(self) -> List[Dict]:
+        imgs = [
+            product.image
+            for product in self.products[:4]
+        ]
+
+        if len(imgs) < 4:
+            imgs.append(s3_client.generate_presigned_url('get_object', self.products[2].images[1]['url']))
+
+        return imgs
+    
 
     @computed_field
     @property

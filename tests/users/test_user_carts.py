@@ -19,7 +19,6 @@ def test_create_cart_success(access_token_tailor, product_01, access_token_user,
     send_data = create_new_cart(product).model_dump()
     res = client.post(f'/carts/{access_token_user["id"]}', json=send_data,
                       headers=access_token_user['header'])
-    print("here is what I am testing", res.json())
     assert res.status_code == 200
     BaseResponse.model_validate(res.json())
 
@@ -47,7 +46,6 @@ def test_get_cart_successful(access_token_user, access_token_tailor, product_01,
     res = client.get('/carts/{}'.format(access_token_user['id']),
                      headers=access_token_user['header'])
     assert res.status_code == 200
-    print("This is the cart response:  ", res.json()[0])
     CartItems.model_validate(res.json()[0])
 
 
